@@ -1,0 +1,49 @@
+# Ignore Visual Studio temporary files, build results, and
+# user-specific files
+.vscode/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Ignore build output
+bin/
+obj/
+*.log
+
+# Ignore NuGet packages
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Ignore environment settings and secrets
+.env
+appsettings.*.json
+
+# Ignore Rider specific files
+.idea/
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary files and build logs
+*.tmp
+*.log
+*.pid
+*.log.*
+*.swp
+*.bak
+
+# Ignore JetBrains Rider IDE files
+.idea/
+
+# Ignore generated code and dependencies
+Generated_Code/
+wwwroot/
+node_modules/
+
+# Ignore specific temporary files
+Releases/
