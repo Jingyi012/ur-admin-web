@@ -1,12 +1,7 @@
-import {
-  ModalForm,
-  ProFormSelect,
-  ProFormText,
-  ProFormTextArea,
-  ProFormUploadButton,
-} from '@ant-design/pro-components';
-import { Col, Form, Row } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
+import { ModalForm, ProFormSelect, ProFormText, ProFormTextArea } from '@ant-design/pro-components';
+import { Col, Form, Row, UploadFile } from 'antd';
+import React, { useState } from 'react';
+import ImageUploadWithSort from '@/components/ImageOperation/ImageUploadWithSort';
 
 export type FormValueType = {
   target?: string;
@@ -18,13 +13,15 @@ export type FormValueType = {
 
 export type AddFormProps = {
   onCancel: (flag?: boolean, formVals?: FormValueType) => void;
-  onSubmit: (values: FormValueType) => Promise<void>;
+  onSubmit: (values: FormValueType, fileList: UploadFile[]) => Promise<void>;
   visible: boolean;
   productCategories: API.ProductCategory[];
 };
 
 const AddForm: React.FC<AddFormProps> = ({ onCancel, onSubmit, visible, productCategories }) => {
   const [form] = Form.useForm();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+
   const categoryOptions = productCategories.map((category: { id: number; name: string }) => ({
     label: category.name,
     value: category.id,
@@ -32,6 +29,7 @@ const AddForm: React.FC<AddFormProps> = ({ onCancel, onSubmit, visible, productC
 
   const handleCancel = () => {
     form.resetFields();
+    setFileList([]);
     onCancel();
   };
 
@@ -45,8 +43,9 @@ const AddForm: React.FC<AddFormProps> = ({ onCancel, onSubmit, visible, productC
         destroyOnClose: true,
       }}
       onFinish={async (values) => {
-        await onSubmit(values);
+        await onSubmit(values, fileList);
       }}
+      initialValues={{ isActive: true }}
     >
       <Row gutter={16}>
         <Col span={12}>
@@ -81,18 +80,7 @@ const AddForm: React.FC<AddFormProps> = ({ onCancel, onSubmit, visible, productC
             placeholder="Please select"
             rules={[{ required: true, message: 'Please select display status' }]}
           />
-          <ProFormUploadButton
-            name="image"
-            label="Upload Image"
-            max={1}
-            fieldProps={{
-              name: 'file',
-              listType: 'picture-card',
-            }}
-            action="/upload.do"
-            title="Upload Image"
-            style={{ width: '100%' }}
-          />
+          <ImageUploadWithSort fileList={fileList} onFileChange={setFileList} />
         </Col>
       </Row>
       <Row gutter={16}>
