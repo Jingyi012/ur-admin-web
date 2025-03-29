@@ -53,4 +53,5 @@ export default {
   'menu.News': 'News',
   'menu.Projects': 'Projects',
   'menu.Enquiries': 'Enquiries',
+  'menu.Users': 'Users',
 };

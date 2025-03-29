@@ -40,7 +40,6 @@ export async function addProduct(
     description?: string;
     productCategoryId: number;
     manufacturer: string;
-    images?: string[];
     isActive: boolean;
   },
   options?: { [key: string]: any },
@@ -56,7 +55,6 @@ export async function updateProduct(
     description?: string;
     productCategoryId: number;
     manufacturer: string;
-    images?: string[];
     isActive: boolean;
   },
   options?: { [key: string]: any },

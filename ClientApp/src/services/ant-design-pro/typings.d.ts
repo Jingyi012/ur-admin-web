@@ -135,7 +135,7 @@ declare namespace API {
     id: number;
     title: string;
     description?: string;
-    images?: string[];
+    imageUrls?: string[];
     date: string;
     isActive: boolean;
   };
@@ -144,7 +144,7 @@ declare namespace API {
     id?: number;
     name: string;
     description?: string;
-    images?: string[];
+    imageUrls?: string[];
     latitude: number;
     longitude: number;
     isActive: boolean;
@@ -157,7 +157,7 @@ declare namespace API {
     description?: string;
     productCategoryId: number;
     manufacturer: string;
-    images?: string[];
+    imageUrls?: string[];
     isActive: boolean;
   };
 
