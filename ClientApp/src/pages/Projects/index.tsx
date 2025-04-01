@@ -1,28 +1,27 @@
 import { PlusOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, message, Modal } from 'antd';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
+import { FormattedMessage } from '@umijs/max';
+import { Button, message, Modal, Tag, UploadFile } from 'antd';
 import React, { useRef, useState } from 'react';
-import UpdateForm from './components/UpdateForm';
-import AddForm from './components/AddForm';
 import {
   addProject,
   getProjects,
   removeProject,
   updateProject,
 } from '@/services/ant-design-pro/project';
+import UpdateFormDrawer from './components/UpdateFormDrawer';
+import {
+  addProjectImages,
+  projectImageReorder,
+  removeProjectImage,
+} from '@/services/ant-design-pro/projectImage';
 
 const ProjectsList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
 
-  const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.Projects>();
@@ -30,7 +29,6 @@ const ProjectsList: React.FC = () => {
   const [projectList, setProjectList] = useState<API.Projects[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const intl = useIntl();
 
   const fetchData = async (params: {
     pageNumber?: number;
@@ -62,66 +60,175 @@ const ProjectsList: React.FC = () => {
     }
   };
 
-  const handleAdd = async (fields: API.Projects) => {
-    const hide = message.loading('Adding');
+  const handleImageUpload = async (projectId: number, fileList: any) => {
+    const hide = message.loading('Upload images...');
     try {
-      const response = await addProject(fields);
-      if (response.data.succeeded !== true) {
+      setLoading(true);
+      const response = await addProjectImages(projectId, fileList);
+      if (!response.data.succeeded) {
         hide();
-        message.error('Adding failed, please try again!');
+        message.error('Image upload failed, please try again!');
+        return false;
       }
       hide();
-      message.success('Added successfully');
+      if (actionRef.current) {
+        actionRef.current.reload();
+      }
       return true;
     } catch (error) {
-      hide();
-      message.error('Adding failed, please try again!');
+      message.error('Image upload failed, please try again!');
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUpdate = async (fields: API.Projects) => {
-    const hide = message.loading('Updating');
+  const handleAdd = async (fields: API.Projects, fileList: any) => {
+    const hide = message.loading('Adding project...');
     try {
-      const response = await updateProject(currentRow!.id!, fields);
-
-      if (response.data.succeeded !== true) {
+      const response = await addProject(fields);
+      if (!response.data.succeeded) {
         hide();
-        message.error('Update failed, please try again!');
+        message.error('Project creation failed, please try again!');
         return false;
       }
 
+      const projectId = response.data.data;
+      let imageUploadSuccess = true;
+
+      if (fileList.length > 0) {
+        imageUploadSuccess = await handleImageUpload(projectId, fileList);
+      }
+
       hide();
-      message.success('Update successful');
+
+      if (imageUploadSuccess) {
+        message.success('Project added successfully!');
+      } else {
+        message.warning(
+          'Project added, but image upload failed. Please upload images in update form.',
+        );
+      }
+
       return true;
     } catch (error) {
       hide();
-      message.error('Update failed, please try again!');
+      message.error('An error occurred while adding the project. Please try again!');
       return false;
     }
   };
 
-  const handleRemove = async (selectedRows: API.Projects[]) => {
+  const removeImages = async (fileList: UploadFile[]) => {
+    const deletedImages =
+      currentRow?.imageUrls?.filter((url) => !fileList.some((file) => file.url === url)) || [];
+
+    if (deletedImages.length === 0) return;
+
+    const responses = await Promise.allSettled(
+      deletedImages.map((url) => removeProjectImage({ imageUrl: url })),
+    );
+
+    const failedResponses = responses.some(
+      (res) => res.status === 'rejected' || (res.value && !res.value.data?.succeeded),
+    );
+
+    if (failedResponses) throw new Error('Image removal failed, please try again!');
+  };
+
+  const uploadNewImages = async (projectId: number, fileList: UploadFile[]) => {
+    const newImages = fileList.filter((file) => !file.url) as UploadFile[];
+
+    if (newImages.length === 0) return [];
+
+    const response = await addProjectImages(projectId, newImages);
+    if (!response.data.succeeded) throw new Error('Image upload failed, please try again!');
+
+    return response.data.data;
+  };
+
+  const reorderImages = async (
+    projectId: number,
+    fileList: UploadFile[],
+    uploadedUrls: string[],
+    initialImages: string[] = [],
+  ) => {
+    const finalImageOrder = fileList
+      .map((file) => file.url || uploadedUrls.shift())
+      .filter(Boolean) as string[];
+
+    if (
+      finalImageOrder.length === 0 ||
+      JSON.stringify(finalImageOrder) === JSON.stringify(initialImages)
+    ) {
+      return;
+    }
+
+    const imagesOrder = finalImageOrder.map((url, index) => ({
+      imageUrl: url,
+      order: index + 1,
+    }));
+
+    const response = await projectImageReorder({ projectId, images: imagesOrder });
+    if (!response.data.succeeded) throw new Error('Image reorder failed, please try again!');
+  };
+
+  const updateProjectDetails = async (projectId: number, fields: API.Projects) => {
+    const response = await updateProject(projectId, fields);
+    if (!response.data.succeeded) throw new Error('Project update failed, please try again!');
+  };
+
+  const handleUpdate = async (fields: API.Projects, fileList: UploadFile[]) => {
+    const hide = message.loading('Updating...');
+    const projectId = currentRow!.id!;
+
+    try {
+      await removeImages(fileList);
+      const uploadedUrls = await uploadNewImages(projectId, fileList);
+      await reorderImages(projectId, fileList, uploadedUrls, currentRow?.imageUrls || []);
+      await updateProjectDetails(projectId, fields);
+
+      message.success('Update successful');
+      return true;
+    } catch (error: any) {
+      message.error(error.message || 'Update failed, please try again!');
+      return false;
+    } finally {
+      hide();
+    }
+  };
+
+  const handleRemove = async (
+    selectedRows: API.Projects[],
+    isDrawer: boolean = false,
+  ): Promise<boolean> => {
+    const hide = message.loading('Deleting...');
+    if (!selectedRows) return false;
+
+    try {
+      await Promise.all(selectedRows.map((row) => removeProject(row.id!)));
+      hide();
+      message.success('Deleted successfully');
+      actionRef?.current?.reloadAndRest?.();
+
+      if (isDrawer) {
+        handleUpdateModalOpen(false);
+      }
+
+      return true;
+    } catch (error) {
+      hide();
+      message.error('Delete failed, please try again');
+      return false;
+    }
+  };
+
+  const confirmDelete = (selectedRows: API.Projects[], isDrawer: boolean = false) => {
     Modal.confirm({
       title: 'Confirm Deletion',
       content: 'Are you sure you want to delete this item?',
       okText: 'Yes',
       cancelText: 'No',
-      onOk: async () => {
-        const hide = message.loading('Deleting');
-        if (!selectedRows) return true;
-        try {
-          await Promise.all(selectedRows.map((row) => removeProject(row.id!)));
-          hide();
-          message.success('Deleted successfully');
-          actionRef.current?.reloadAndRest?.();
-          return true;
-        } catch (error) {
-          hide();
-          message.error('Delete failed, please try again');
-          return false;
-        }
-      },
+      onOk: async () => handleRemove(selectedRows, isDrawer),
     });
   };
 
@@ -140,7 +247,8 @@ const ProjectsList: React.FC = () => {
           <a
             onClick={() => {
               setCurrentRow(entity);
-              setShowDetail(true);
+              handleUpdateModalOpen(true);
+              setIsEditMode(false);
             }}
           >
             {dom}
@@ -177,16 +285,20 @@ const ProjectsList: React.FC = () => {
       hideInSearch: true,
     },
     {
-      title: 'Image',
-      dataIndex: 'image',
+      title: 'Images',
+      dataIndex: 'imageUrls',
       hideInTable: true,
       hideInSearch: true,
     },
     {
       title: 'Display',
       dataIndex: 'isActive',
+      valueEnum: {
+        true: { text: 'Yes', status: 'Success' },
+        false: { text: 'No', status: 'Error' },
+      },
       render: (_, record) => {
-        return record.isActive ? 'Yes' : 'No';
+        return record.isActive ? <Tag color="green">Yes</Tag> : <Tag color="red">No</Tag>;
       },
     },
     {
@@ -198,6 +310,7 @@ const ProjectsList: React.FC = () => {
           key="update"
           onClick={() => {
             handleUpdateModalOpen(true);
+            setIsEditMode(true);
             setCurrentRow(record);
           }}
         >
@@ -206,7 +319,7 @@ const ProjectsList: React.FC = () => {
         <a
           key="delete"
           onClick={async () => {
-            await handleRemove([record]);
+            await confirmDelete([record]);
           }}
           style={{ color: 'red' }}
         >
@@ -238,7 +351,7 @@ const ProjectsList: React.FC = () => {
           </Button>,
         ]}
         dataSource={projectList}
-        request={(params) =>
+        request={(params: any) =>
           fetchData({
             pageNumber: params.current ?? 1,
             pageSize: params.pageSize ?? 20,
@@ -265,7 +378,7 @@ const ProjectsList: React.FC = () => {
         >
           <Button
             onClick={async () => {
-              await handleRemove(selectedRowsState);
+              await confirmDelete(selectedRowsState);
               setSelectedRows([]);
             }}
           >
@@ -276,64 +389,49 @@ const ProjectsList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      <AddForm
-        onCancel={() => handleModalOpen(false)}
-        onSubmit={async (value) => {
-          const success = await handleAdd(value as API.Projects);
-          if (success) {
-            handleModalOpen(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        visible={createModalOpen}
-      />
 
-      <UpdateForm
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value);
+      <UpdateFormDrawer
+        key={currentRow?.id ?? Date.now()}
+        onSubmit={async (value, fileList) => {
+          const success = await handleUpdate(value as API.Projects, fileList);
           if (success) {
-            handleUpdateModalOpen(false);
-            setCurrentRow(undefined);
             if (actionRef.current) {
               actionRef.current.reload();
             }
+            return true;
           }
+          return false;
         }}
         onCancel={() => {
           handleUpdateModalOpen(false);
-          if (!showDetail) {
-            setCurrentRow(undefined);
-          }
+          setTimeout(() => setCurrentRow(undefined), 300);
         }}
         visible={updateModalOpen}
         initialValues={currentRow || {}}
+        isEditMode={isEditMode}
+        handleDelete={async () => confirmDelete([currentRow!], true)}
       />
 
-      <Drawer
-        width={700}
-        open={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
+      {/* Add Form*/}
+      <UpdateFormDrawer
+        onSubmit={async (value, fileList) => {
+          const success = await handleAdd(value as API.Projects, fileList);
+          if (success) {
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+            return true;
+          }
+          return false;
         }}
-        closable={false}
-      >
-        {currentRow?.name && (
-          <ProDescriptions<API.Projects>
-            column={1}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.id,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.Projects>[]}
-          />
-        )}
-      </Drawer>
+        onCancel={() => {
+          handleModalOpen(false);
+        }}
+        visible={createModalOpen}
+        initialValues={{}}
+        isEditMode={true}
+        isAddMode={true}
+      />
     </PageContainer>
   );
 };
