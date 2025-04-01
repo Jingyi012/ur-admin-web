@@ -261,6 +261,7 @@ const ProjectsList: React.FC = () => {
       dataIndex: 'date',
       valueType: 'dateTime',
       sorter: true,
+      hideInSearch: true,
       render: (_, row) => {
         if (!row.date) return '-';
         const date = new Date(row.date);

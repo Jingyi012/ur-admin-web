@@ -52,7 +52,6 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
       setSavedFileList(existingFileList);
       setIsEditing(isEditMode);
     } else {
-      form.resetFields();
       setFileList([]);
       setSavedFileList([]);
       setIsEditing(true);
@@ -206,7 +205,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
             <ProFormTextArea
               name="description"
               label="Description"
-              placeholder="Enter description"
+              placeholder={isEditing ? 'Please enter description' : ''}
               rules={[{ required: false, message: 'Please enter description' }]}
               disabled={!isEditing}
             />
