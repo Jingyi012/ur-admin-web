@@ -1,30 +1,26 @@
-import { Drawer, Col, Row, Form, Divider, Button } from 'antd';
-import { ProFormSelect, ProFormText, ProFormTextArea } from '@ant-design/pro-components';
-import { ProCard, ProForm } from '@ant-design/pro-components';
+import { Col, Row, Divider, Button, UploadFile, Form } from 'antd';
+import {
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+  DrawerForm,
+} from '@ant-design/pro-components';
+import { ProCard } from '@ant-design/pro-components';
 import React, { useEffect, useState } from 'react';
-import ImageSection from '@/components/ImageOperation/ImageSection';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import ImageUploader from '@/components/ImageOperation/ImageUploader';
 
-export type FormValueType = {
-  target?: string;
-  template?: string;
-  type?: string;
-  time?: string;
-  frequency?: string;
-} & Partial<API.Products>;
+export type FormValueType = Partial<API.Products>;
 
 export type UpdateFormDrawerProps = {
   onCancel: (flag?: boolean, formVals?: FormValueType) => void;
-  onSubmit: (values: FormValueType) => Promise<void>;
+  onSubmit: (values: FormValueType, fileList: UploadFile[]) => Promise<boolean>;
   visible: boolean;
   initialValues: Partial<API.Products>;
   productCategories: API.ProductCategory[];
-  isEditMode: boolean;
-  handleImageUpload: (productId: number, fileList: any) => Promise<boolean>;
-  handleImageDelete: (url: string) => Promise<boolean>;
-  handleImageReorder: (productId: number, newOrder: string[]) => Promise<boolean>;
-  fetchImages: (productId: number) => Promise<string[]>;
-  handleDelete: () => Promise<void>;
+  isEditMode?: boolean;
+  isAddMode?: boolean;
+  handleDelete?: () => Promise<void>;
 };
 
 const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
@@ -34,152 +30,163 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
   initialValues,
   productCategories,
   isEditMode = false,
-  handleImageUpload,
-  handleImageDelete,
-  handleImageReorder,
-  fetchImages,
+  isAddMode = false,
   handleDelete,
 }) => {
   const [form] = Form.useForm();
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [savedFileList, setSavedFileList] = useState<UploadFile[]>([]);
 
-  const categoryOptions = productCategories.map((category: { id: number; name: string }) => ({
+  const categoryOptions = productCategories.map((category) => ({
     label: category.name,
     value: category.id,
   }));
 
   useEffect(() => {
-    if (initialValues) {
-      setImageUrls(initialValues.imageUrls || []);
+    if (!isAddMode && initialValues) {
+      const existingImageUrls = initialValues.imageUrls || [];
+
+      const existingFileList: UploadFile[] = existingImageUrls.map((url, index) => ({
+        uid: `${index}`,
+        name: `Image-${index + 1}`,
+        status: 'done',
+        url,
+      }));
+      setFileList(existingFileList);
+      setSavedFileList(existingFileList);
       setIsEditing(isEditMode);
+    } else {
+      form.resetFields();
+      setFileList([]);
+      setSavedFileList([]);
+      setIsEditing(true);
     }
-  }, [initialValues]);
+  }, [initialValues, isAddMode]);
 
   return (
-    <Drawer
-      title={initialValues.name}
+    <DrawerForm
+      title={isAddMode ? 'Add Product' : initialValues.name}
       open={visible}
-      onClose={() => {
-        setIsEditing(false);
-        onCancel();
-      }}
       width={700}
-      destroyOnClose
-      extra={
-        <>
-          {/* Edit Button */}
-          <Button
-            type="text"
-            icon={<EditOutlined style={{ color: isEditing ? '#1890ff' : 'rgba(0, 0, 0, 0.45)' }} />}
-            onClick={() => {
-              if (isEditing) {
-                form.resetFields();
-              }
-              setIsEditing((prev) => !prev);
-            }}
-          />
-
-          {/* Delete Button */}
-          <Button
-            type="text"
-            icon={<DeleteOutlined style={{ color: 'red' }} />}
-            onClick={handleDelete}
-          />
-        </>
+      form={form}
+      onFinish={async (values) => {
+        const success = await onSubmit(values, fileList);
+        if (success) {
+          setSavedFileList(fileList);
+          setIsEditing(false);
+          onCancel();
+        }
+      }}
+      onOpenChange={(open) => {
+        if (!open) {
+          setIsEditing(false);
+          onCancel();
+        }
+      }}
+      submitter={
+        isEditing
+          ? {
+              searchConfig: {
+                submitText: 'Submit',
+              },
+            }
+          : false
       }
+      drawerProps={{
+        destroyOnClose: true,
+        extra: !isAddMode && (
+          <>
+            <Button
+              type="text"
+              icon={
+                <EditOutlined style={{ color: isEditing ? '#1890ff' : 'rgba(0, 0, 0, 0.45)' }} />
+              }
+              onClick={() => {
+                setIsEditing((prev) => {
+                  if (prev) {
+                    form.resetFields();
+                    setFileList(savedFileList);
+                  }
+                  return !prev;
+                });
+              }}
+            />
+            <Button
+              type="text"
+              icon={<DeleteOutlined style={{ color: 'red' }} />}
+              onClick={handleDelete}
+            />
+          </>
+        ),
+      }}
+      initialValues={initialValues}
     >
       {/* Product Details Section */}
       <ProCard title="Product Details" bordered collapsible>
-        <ProForm
-          form={form}
-          initialValues={initialValues}
-          onFinish={async (values) => {
-            await onSubmit(values);
-            setIsEditing(false);
-          }}
-          submitter={isEditing ? undefined : false}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <ProFormText
-                name="name"
-                label="Product Name"
-                placeholder="Enter product name"
-                rules={[{ required: true, message: 'Please enter product name' }]}
-                disabled={!isEditing}
-              />
-              <ProFormSelect
-                name="productCategoryId"
-                label="Category"
-                options={categoryOptions}
-                placeholder="Select category"
-                rules={[{ required: true, message: 'Please select a category' }]}
-                disabled={!isEditing}
-              />
-            </Col>
-            <Col span={12}>
-              <ProFormText
-                name="manufacturer"
-                label="Manufacturer"
-                placeholder="Enter manufacturer"
-                rules={[{ required: true, message: 'Please enter manufacturer' }]}
-                disabled={!isEditing}
-              />
-              <ProFormSelect
-                name="isActive"
-                label="Display"
-                options={[
-                  { label: 'Yes', value: true },
-                  { label: 'No', value: false },
-                ]}
-                placeholder="Select"
-                rules={[{ required: true, message: 'Please select display status' }]}
-                disabled={!isEditing}
-              />
-            </Col>
-          </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <ProFormText
+              name="name"
+              label="Product Name"
+              placeholder="Enter product name"
+              rules={[{ required: true, message: 'Please enter product name' }]}
+              disabled={!isEditing}
+            />
+            <ProFormSelect
+              name="productCategoryId"
+              label="Category"
+              options={categoryOptions}
+              placeholder="Select category"
+              rules={[{ required: true, message: 'Please select a category' }]}
+              disabled={!isEditing}
+            />
+          </Col>
+          <Col span={12}>
+            <ProFormText
+              name="manufacturer"
+              label="Manufacturer"
+              placeholder="Enter manufacturer"
+              rules={[{ required: true, message: 'Please enter manufacturer' }]}
+              disabled={!isEditing}
+            />
+            <ProFormSelect
+              name="isActive"
+              label="Display"
+              options={[
+                { label: 'Yes', value: true },
+                { label: 'No', value: false },
+              ]}
+              placeholder="Select"
+              rules={[{ required: true, message: 'Please select display status' }]}
+              disabled={!isEditing}
+            />
+          </Col>
+        </Row>
 
-          <Row gutter={16}>
-            <Col span={24}>
-              <ProFormTextArea
-                name="description"
-                label="Description"
-                placeholder="Enter description"
-                rules={[{ required: true, message: 'Please enter description' }]}
-                disabled={!isEditing}
-              />
-            </Col>
-          </Row>
-        </ProForm>
+        <Row gutter={16}>
+          <Col span={24}>
+            <ProFormTextArea
+              name="description"
+              label="Description"
+              placeholder="Enter description"
+              rules={[{ required: true, message: 'Please enter description' }]}
+              disabled={!isEditing}
+            />
+          </Col>
+        </Row>
       </ProCard>
 
       <Divider />
 
       {/* Product Images Section */}
-      <ImageSection
-        itemId={initialValues.id!}
-        title="Product Images"
-        imageUrls={imageUrls}
-        onUpload={async (itemId, file) => {
-          const success = await handleImageUpload(itemId, file);
-          if (success) {
-            const newImageUrls = await fetchImages(itemId);
-            setImageUrls(newImageUrls);
-          }
-        }}
-        onRemove={async (url) => {
-          const success = await handleImageDelete(url);
-          if (success) {
-            const newImageUrls = imageUrls.filter((imageUrl) => imageUrl !== url);
-            setImageUrls(newImageUrls);
-          }
-        }}
-        onReorder={(newOrder) => setImageUrls(newOrder)}
-        saveReorder={handleImageReorder}
+      <ImageUploader
+        title={'Product Images'}
+        fileList={fileList}
+        onChange={setFileList}
         isEditMode={isEditing}
       />
-    </Drawer>
+    </DrawerForm>
   );
 };
 

@@ -1,10 +1,9 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, message, Modal } from 'antd';
+import { FormattedMessage } from '@umijs/max';
+import { Button, message, Modal, UploadFile } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-import AddForm from './components/AddForm';
 import {
   addProduct,
   getProductCategory,
@@ -14,12 +13,10 @@ import {
 } from '@/services/ant-design-pro/product';
 import {
   addProductImages,
-  getProductImagesById,
   productImageReorder,
   removeProductImage,
 } from '@/services/ant-design-pro/productImage';
 import UpdateFormDrawer from './components/UpdateFormDrawer';
-import UpdateFormModal from './components/UpdateForm';
 
 const ProductsList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
@@ -34,8 +31,6 @@ const ProductsList: React.FC = () => {
   const [productCategory, setProductCategory] = useState<API.ProductCategory[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
-
-  const intl = useIntl();
 
   const fetchData = async (params: {
     pageNumber?: number;
@@ -80,19 +75,6 @@ const ProductsList: React.FC = () => {
     }
   };
 
-  const fetchImages = async (productId: number) => {
-    try {
-      setLoading(true);
-      const response = await getProductImagesById(productId);
-      return response?.data.data || [];
-    } catch {
-      message.error('Failed to fetch product images.');
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleImageUpload = async (productId: number, fileList: any) => {
     const hide = message.loading('Upload images...');
     try {
@@ -116,59 +98,10 @@ const ProductsList: React.FC = () => {
     }
   };
 
-  const handleImageRemove = async (imageUrl: string) => {
-    const hide = message.loading('Remove images...');
-    try {
-      setLoading(true);
-      const response = await removeProductImage({ imageUrl });
-      if (!response.data.succeeded) {
-        hide();
-        message.error('Image removal failed, please try again!');
-        return false;
-      }
-      hide();
-      if (actionRef.current) {
-        actionRef.current.reload();
-      }
-      message.success('Remove successful');
-      return true;
-    } catch (error) {
-      message.error('Image removal failed, please try again!');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleImageReorder = async (productId: number, imageUrls: string[]) => {
-    const hide = message.loading('Reorder images...');
-    try {
-      const images = imageUrls.map((url, index) => ({ imageUrl: url, order: index + 1 }));
-
-      const response = await productImageReorder({ productId, images });
-      if (!response.data.succeeded) {
-        hide();
-        message.error('Image reorder failed, please try again!');
-        return false;
-      }
-      hide();
-      if (actionRef.current) {
-        actionRef.current.reload();
-      }
-      message.success('Reorder successful');
-      return true;
-    } catch (error) {
-      message.error('Image reorder failed, please try again!');
-      return false;
-    }
-  };
-
   const handleAdd = async (fields: API.Products, fileList: any) => {
     const hide = message.loading('Adding product...');
     try {
-      const { images, ...productData } = fields;
-
-      const response = await addProduct(productData);
+      const response = await addProduct(fields);
       if (!response.data.succeeded) {
         hide();
         message.error('Product creation failed, please try again!');
@@ -201,24 +134,79 @@ const ProductsList: React.FC = () => {
     }
   };
 
-  const handleUpdate = async (fields: API.Products) => {
-    const hide = message.loading('Updating');
+  const removeImages = async (fileList: UploadFile[]) => {
+    const deletedImages =
+      currentRow?.imageUrls?.filter((url) => !fileList.some((file) => file.url === url)) || [];
+
+    if (deletedImages.length === 0) return;
+
+    const responses = await Promise.allSettled(
+      deletedImages.map((url) => removeProductImage({ imageUrl: url })),
+    );
+
+    const failedResponses = responses.some(
+      (res) => res.status === 'rejected' || (res.value && !res.value.data?.succeeded),
+    );
+
+    if (failedResponses) throw new Error('Image removal failed, please try again!');
+  };
+
+  const uploadNewImages = async (productId: number, fileList: UploadFile[]) => {
+    const newImages = fileList.filter((file) => !file.url) as UploadFile[];
+
+    if (newImages.length === 0) return [];
+
+    const response = await addProductImages(productId, newImages);
+    if (!response.data.succeeded) throw new Error('Image upload failed, please try again!');
+
+    return response.data.data;
+  };
+
+  const reorderImages = async (
+    productId: number,
+    fileList: UploadFile[],
+    uploadedUrls: string[],
+    initialImages: string[] = [],
+  ) => {
+    const finalImageOrder = fileList
+      .map((file) => file.url || uploadedUrls.shift())
+      .filter(Boolean) as string[];
+
+    if (JSON.stringify(finalImageOrder) === JSON.stringify(initialImages)) {
+      return;
+    }
+
+    const imagesOrder = finalImageOrder.map((url, index) => ({
+      imageUrl: url,
+      order: index + 1,
+    }));
+
+    const response = await productImageReorder({ productId, images: imagesOrder });
+    if (!response.data.succeeded) throw new Error('Image reorder failed, please try again!');
+  };
+
+  const updateProductDetails = async (productId: number, fields: API.Products) => {
+    const response = await updateProduct(productId, fields);
+    if (!response.data.succeeded) throw new Error('Product update failed, please try again!');
+  };
+
+  const handleUpdate = async (fields: API.Products, fileList: UploadFile[]) => {
+    const hide = message.loading('Updating...');
+    const productId = currentRow!.id!;
+
     try {
-      const response = await updateProduct(currentRow!.id!, fields);
+      await removeImages(fileList);
+      const uploadedUrls = await uploadNewImages(productId, fileList);
+      await reorderImages(productId, fileList, uploadedUrls, currentRow?.imageUrls || []);
+      await updateProductDetails(productId, fields);
 
-      if (response.data.succeeded !== true) {
-        hide();
-        message.error('Update failed, please try again!');
-        return false;
-      }
-
-      hide();
       message.success('Update successful');
       return true;
-    } catch (error) {
-      hide();
-      message.error('Update failed, please try again!');
+    } catch (error: any) {
+      message.error(error.message || 'Update failed, please try again!');
       return false;
+    } finally {
+      hide();
     }
   };
 
@@ -409,30 +397,18 @@ const ProductsList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      <AddForm
-        onCancel={() => handleModalOpen(false)}
-        onSubmit={async (value, fileList) => {
-          const success = await handleAdd(value as API.Products, fileList);
-          if (success) {
-            handleModalOpen(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        visible={createModalOpen}
-        productCategories={productCategory}
-      />
 
       <UpdateFormDrawer
         key={currentRow?.id ?? Date.now()}
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value);
+        onSubmit={async (value, fileList) => {
+          const success = await handleUpdate(value as API.Products, fileList);
           if (success) {
             if (actionRef.current) {
               actionRef.current.reload();
             }
+            return true;
           }
+          return false;
         }}
         onCancel={() => {
           handleUpdateModalOpen(false);
@@ -442,11 +418,29 @@ const ProductsList: React.FC = () => {
         initialValues={currentRow || {}}
         productCategories={productCategory}
         isEditMode={isEditMode}
-        handleImageUpload={handleImageUpload}
-        handleImageDelete={handleImageRemove}
-        handleImageReorder={handleImageReorder}
-        fetchImages={fetchImages}
         handleDelete={async () => confirmDelete([currentRow!], true)}
+      />
+
+      {/* Add Form*/}
+      <UpdateFormDrawer
+        onSubmit={async (value, fileList) => {
+          const success = await handleAdd(value as API.Products, fileList);
+          if (success) {
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+            return true;
+          }
+          return false;
+        }}
+        onCancel={() => {
+          handleModalOpen(false);
+        }}
+        visible={createModalOpen}
+        initialValues={{}}
+        productCategories={productCategory}
+        isEditMode={true}
+        isAddMode={true}
       />
     </PageContainer>
   );
