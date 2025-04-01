@@ -40,7 +40,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, fileList, onChange
   };
 
   return (
-    <ProCard title={title} bordered collapsible>
+    <ProCard
+      title={title}
+      bordered
+      collapsible
+      tooltip={isEditMode ? 'Drag images to reorder (First is the main display)' : undefined}
+    >
       <DndContext
         sensors={isEditMode ? sensors : dsensors}
         collisionDetection={closestCenter}
