@@ -2,7 +2,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Button, message, Modal, UploadFile } from 'antd';
+import { Button, message, Modal, Tag, UploadFile } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   addProduct,
@@ -128,7 +128,6 @@ const ProductsList: React.FC = () => {
       return true;
     } catch (error) {
       hide();
-      console.error('Product Addition Error:', error);
       message.error('An error occurred while adding the product. Please try again!');
       return false;
     }
@@ -299,7 +298,7 @@ const ProductsList: React.FC = () => {
         false: { text: 'No', status: 'Error' },
       },
       render: (_, record) => {
-        return record.isActive ? 'Yes' : 'No';
+        return record.isActive ? <Tag color="green">Yes</Tag> : <Tag color="red">No</Tag>;
       },
     },
     {
@@ -386,7 +385,7 @@ const ProductsList: React.FC = () => {
         >
           <Button
             onClick={async () => {
-              await handleRemove(selectedRowsState);
+              await confirmDelete(selectedRowsState);
               setSelectedRows([]);
             }}
           >

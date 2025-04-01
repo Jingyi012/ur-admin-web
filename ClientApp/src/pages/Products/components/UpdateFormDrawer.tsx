@@ -57,7 +57,6 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
       setSavedFileList(existingFileList);
       setIsEditing(isEditMode);
     } else {
-      form.resetFields();
       setFileList([]);
       setSavedFileList([]);
       setIsEditing(true);
@@ -129,15 +128,21 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
             <ProFormText
               name="name"
               label="Product Name"
-              placeholder="Enter product name"
-              rules={[{ required: true, message: 'Please enter product name' }]}
+              placeholder="Please enter product name"
+              rules={[
+                { required: true, message: 'Please enter product name' },
+                {
+                  pattern: /^(?!\s*$).+/,
+                  message: 'Project name cannot be empty or contain only spaces',
+                },
+              ]}
               disabled={!isEditing}
             />
             <ProFormSelect
               name="productCategoryId"
               label="Category"
               options={categoryOptions}
-              placeholder="Select category"
+              placeholder="Please select a category"
               rules={[{ required: true, message: 'Please select a category' }]}
               disabled={!isEditing}
             />
@@ -146,7 +151,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
             <ProFormText
               name="manufacturer"
               label="Manufacturer"
-              placeholder="Enter manufacturer"
+              placeholder="Please enter manufacturer"
               rules={[{ required: true, message: 'Please enter manufacturer' }]}
               disabled={!isEditing}
             />
@@ -157,8 +162,9 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
                 { label: 'Yes', value: true },
                 { label: 'No', value: false },
               ]}
-              placeholder="Select"
+              placeholder="Please select display status"
               rules={[{ required: true, message: 'Please select display status' }]}
+              initialValue={true}
               disabled={!isEditing}
             />
           </Col>
@@ -169,8 +175,8 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
             <ProFormTextArea
               name="description"
               label="Description"
-              placeholder="Enter description"
-              rules={[{ required: true, message: 'Please enter description' }]}
+              placeholder={isEditing ? 'Please enter description' : ''}
+              rules={[{ required: false, message: 'Please enter description' }]}
               disabled={!isEditing}
             />
           </Col>
