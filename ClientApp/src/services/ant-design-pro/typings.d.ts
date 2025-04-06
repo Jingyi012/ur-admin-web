@@ -24,6 +24,7 @@ declare namespace API {
     roles: string[];
     isVerified: boolean;
     jwtToken: string;
+    refreshToken: string;
   };
 
   type LoginResult = {

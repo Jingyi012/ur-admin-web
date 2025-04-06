@@ -25,3 +25,10 @@ export async function resetPassword(
 export async function forgotPassword(body: { email: string }, options?: { [key: string]: any }) {
   return httpClient.post('/account/forgot-password', body, { ...options });
 }
+
+export async function refreshSession(
+  body: { token: string; refreshToken: string },
+  options?: { [key: string]: any },
+) {
+  return httpClient.post('/account/refresh', body, { ...options });
+}
