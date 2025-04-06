@@ -1,30 +1,22 @@
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, message, Modal } from 'antd';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
+import { FormattedMessage } from '@umijs/max';
+import { Button, message, Modal, Select } from 'antd';
 import React, { useRef, useState } from 'react';
-import UpdateForm from './components/UpdateForm';
-import { getEnquiries, updateEnquiry } from '@/services/ant-design-pro/enquiry';
-import { removeNews } from '@/services/ant-design-pro/news';
-import { EnquiryStatus, EnquiryType, getEnquiryTypeName } from '@/enum/EnquiryEnum';
+import { getEnquiries, removeEnquiry, updateEnquiry } from '@/services/ant-design-pro/enquiry';
+import { EnquiryStatus, EnquiryType } from '@/enum/EnquiryEnum';
+import ViewDetails from './components/ViewDetails';
 
 const EnquiryList: React.FC = () => {
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
 
-  const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.Enquiry>();
   const [selectedRowsState, setSelectedRows] = useState<API.Enquiry[]>([]);
   const [enquiryList, setEnquiryList] = useState<API.Enquiry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
-  const intl = useIntl();
 
   const fetchData = async (params: {
     pageNumber?: number;
@@ -63,7 +55,7 @@ const EnquiryList: React.FC = () => {
   const handleUpdate = async (fields: Partial<API.Enquiry>) => {
     const hide = message.loading('Updating');
     try {
-      const response = await updateEnquiry(fields.id!, fields);
+      const response = await updateEnquiry(currentRow!.id!, fields);
       if (response.data.succeeded !== true) {
         hide();
         message.error('Update failed, please try again!');
@@ -71,11 +63,11 @@ const EnquiryList: React.FC = () => {
       }
 
       hide();
-      message.success('Configuration is successful');
+      message.success('Update successful');
       return true;
     } catch (error) {
       hide();
-      message.error('Configuration failed, please try again!');
+      message.error('Update failed, please try again!');
       return false;
     }
   };
@@ -90,13 +82,65 @@ const EnquiryList: React.FC = () => {
         const hide = message.loading('Deleting');
         if (!selectedRows) return true;
         try {
-          await Promise.all(selectedRows.map((row) => removeNews(row.id!)));
+          await Promise.all(selectedRows.map((row) => removeEnquiry(row.id!)));
           hide();
           message.success('Deleted successfully');
+          actionRef.current?.reloadAndRest?.();
           return true;
         } catch (error) {
           hide();
           message.error('Delete failed, please try again');
+          return false;
+        }
+      },
+    });
+  };
+
+  const handleBatchStatusUpdate = async (selectedRows: API.Enquiry[]) => {
+    let selectedStatus: EnquiryStatus | undefined;
+    Modal.confirm({
+      title: 'Confirm Status Update',
+      content: (
+        <div>
+          <p>Select new status for the selected items:</p>
+          <Select
+            style={{ width: '100%' }}
+            placeholder="Select status"
+            onChange={(value) => (selectedStatus = value)}
+            options={[
+              { label: 'Pending', value: EnquiryStatus.Pending },
+              { label: 'In Progress', value: EnquiryStatus.InProgress },
+              { label: 'Resolved', value: EnquiryStatus.Resolved },
+              { label: 'Closed', value: EnquiryStatus.Closed },
+            ]}
+          />
+        </div>
+      ),
+      okText: 'Update',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        if (!selectedStatus) {
+          message.warning('Please select a status before updating.');
+          return Promise.reject();
+        }
+        const hide = message.loading('Updating Status');
+        try {
+          await Promise.all(
+            selectedRows.map((row) =>
+              updateEnquiry(row.id!, {
+                status: selectedStatus,
+                assignedTo: row.assignedTo,
+                remarks: row.remarks,
+              }),
+            ),
+          );
+          hide();
+          message.success('Statuses updated successfully');
+          actionRef.current?.reloadAndRest?.();
+          return true;
+        } catch (error) {
+          hide();
+          message.error('Update failed, please try again');
           return false;
         }
       },
@@ -109,6 +153,7 @@ const EnquiryList: React.FC = () => {
       dataIndex: 'id',
       hideInTable: true,
       hideInSearch: true,
+      hideInDescriptions: true,
     },
     {
       title: 'Customer Name',
@@ -118,7 +163,7 @@ const EnquiryList: React.FC = () => {
           <a
             onClick={() => {
               setCurrentRow(entity);
-              setShowDetail(true);
+              handleUpdateModalOpen(true);
             }}
           >
             {dom}
@@ -137,8 +182,13 @@ const EnquiryList: React.FC = () => {
     {
       title: 'Enquiry Type',
       dataIndex: 'type',
-      render: (_, row) => {
-        return getEnquiryTypeName(row.type);
+      valueType: 'select',
+      valueEnum: {
+        0: { text: 'Product Enquiry' },
+        1: { text: 'Consultancy Site Survey' },
+        2: { text: 'Design' },
+        3: { text: 'Repair & Maintenance' },
+        4: { text: 'Other' },
       },
     },
     {
@@ -167,7 +217,7 @@ const EnquiryList: React.FC = () => {
           status: 'Default',
         },
         1: {
-          text: 'Ongoing',
+          text: 'In Progress',
           status: 'Processing',
         },
         2: {
@@ -185,12 +235,13 @@ const EnquiryList: React.FC = () => {
       dataIndex: 'created',
       valueType: 'dateTime',
       hideInTable: true,
+      hideInSearch: true,
     },
     {
       title: 'Last Updated Time',
-      sorter: true,
       dataIndex: 'lastModified',
       valueType: 'dateTime',
+      hideInSearch: true,
     },
     {
       title: 'Action',
@@ -202,6 +253,7 @@ const EnquiryList: React.FC = () => {
           onClick={() => {
             handleUpdateModalOpen(true);
             setCurrentRow(record);
+            setIsEditMode(true);
           }}
         >
           Update
@@ -255,7 +307,6 @@ const EnquiryList: React.FC = () => {
             onClick={async () => {
               await handleRemove(selectedRowsState);
               setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
             }}
           >
             <FormattedMessage
@@ -263,54 +314,41 @@ const EnquiryList: React.FC = () => {
               defaultMessage="Batch deletion"
             />
           </Button>
-          <Button type="primary">Batch status update</Button>
+          <Button
+            type="primary"
+            onClick={async () => {
+              await handleBatchStatusUpdate(selectedRowsState);
+              setSelectedRows([]);
+            }}
+          >
+            Batch status update
+          </Button>
         </FooterToolbar>
       )}
 
-      <UpdateForm
+      <ViewDetails
+        onCancel={() => {
+          handleUpdateModalOpen(false);
+          setIsEditMode(false);
+          setTimeout(() => setCurrentRow(undefined), 300);
+        }}
+        visible={updateModalOpen}
+        initialValues={currentRow || {}}
+        isEditMode={isEditMode}
         onSubmit={async (value) => {
           const success = await handleUpdate(value);
           if (success) {
             handleUpdateModalOpen(false);
-            setCurrentRow(undefined);
+            setIsEditMode(false);
+            setTimeout(() => setCurrentRow(undefined), 300);
             if (actionRef.current) {
               actionRef.current.reload();
             }
+            return true;
           }
+          return false;
         }}
-        onCancel={() => {
-          handleUpdateModalOpen(false);
-          if (!showDetail) {
-            setCurrentRow(undefined);
-          }
-        }}
-        updateModalOpen={updateModalOpen}
-        values={currentRow || {}}
       />
-
-      <Drawer
-        width={600}
-        open={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
-        }}
-        closable={false}
-      >
-        {currentRow?.name && (
-          <ProDescriptions<API.Enquiry>
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.Enquiry>[]}
-          />
-        )}
-      </Drawer>
     </PageContainer>
   );
 };

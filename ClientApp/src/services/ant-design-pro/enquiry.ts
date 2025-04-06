@@ -62,3 +62,8 @@ export async function updateEnquiry(
 export async function removeEnquiry(id: number, options?: { [key: string]: any }) {
   return httpClient.delete(`${API_VERSION}/enquiry/${id}`, { ...options });
 }
+
+/* Get Enquiry History */
+export async function getEnquiryHistory(enquiryId: number, options?: { [key: string]: any }) {
+  return httpClient.get(`${API_VERSION}/enquiry/history/${enquiryId}`, { ...options });
+}

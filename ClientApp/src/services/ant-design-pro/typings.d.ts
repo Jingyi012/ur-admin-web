@@ -122,13 +122,14 @@ declare namespace API {
     companyName: string;
     phone: string;
     email: string;
-    type: string;
+    type: number;
     message: string;
     status?: number;
     assignedTo?: string;
     remarks?: string;
     created?: string;
     lastModified?: string;
+    lastModifiedBy?: string;
   };
 
   type News = {

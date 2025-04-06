@@ -1,16 +1,16 @@
 export enum EnquiryStatus {
-  Pending = 1,
-  InProgress = 2,
+  Pending = 0,
+  InProgress = 1,
   Resolved = 2,
-  Closed = 4,
+  Closed = 3,
 }
 
 export enum EnquiryType {
-  ProdcutEnquiry = 1,
-  ConsultancySiteSurvey = 2,
-  Design = 3,
-  RepairMantenance = 4,
-  Other = 5,
+  ProdcutEnquiry = 0,
+  ConsultancySiteSurvey = 1,
+  Design = 2,
+  RepairMantenance = 3,
+  Other = 4,
 }
 
 export const getEnquiryTypeName = (type?: number): string => {
@@ -19,11 +19,11 @@ export const getEnquiryTypeName = (type?: number): string => {
   }
 
   const enquiryTypeMap: Record<number, string> = {
-    1: 'Product Enquiry',
-    2: 'Consultancy Site Survey',
-    3: 'Design',
-    4: 'Repair & Maintenance',
-    5: 'Other',
+    0: 'Product Enquiry',
+    1: 'Consultancy Site Survey',
+    2: 'Design',
+    3: 'Repair & Maintenance',
+    4: 'Other',
   };
 
   return enquiryTypeMap[type] ?? 'Unknown';
