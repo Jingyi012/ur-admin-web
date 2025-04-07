@@ -1,23 +1,17 @@
 import { PlusOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Button, Drawer, message, Modal } from 'antd';
+import { Button, message, Modal } from 'antd';
 import React, { useRef, useState } from 'react';
-import UpdateForm from './components/UpdateForm';
-import AddForm from './components/AddForm';
 import { addUser, getUsers, removeUser, updateUser } from '@/services/ant-design-pro/user';
+import UpdateFormDrawer from './components/UpdateFormDrawer';
 
 const UserList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
 
-  const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.User>();
@@ -89,27 +83,38 @@ const UserList: React.FC = () => {
     }
   };
 
-  const handleRemove = async (selectedRows: API.User[]) => {
+  const handleRemove = async (
+    selectedRows: API.User[],
+    isDrawer: boolean = false,
+  ): Promise<boolean> => {
+    const hide = message.loading('Deleting...');
+    if (!selectedRows) return false;
+
+    try {
+      await Promise.all(selectedRows.map((row) => removeUser(row.id!)));
+      hide();
+      message.success('Deleted successfully');
+      actionRef?.current?.reloadAndRest?.();
+
+      if (isDrawer) {
+        handleUpdateModalOpen(false);
+      }
+
+      return true;
+    } catch (error) {
+      hide();
+      message.error('Delete failed, please try again');
+      return false;
+    }
+  };
+
+  const confirmDelete = (selectedRows: API.User[], isDrawer: boolean = false) => {
     Modal.confirm({
       title: 'Confirm Deletion',
       content: 'Are you sure you want to delete this item?',
       okText: 'Yes',
       cancelText: 'No',
-      onOk: async () => {
-        const hide = message.loading('Deleting');
-        if (!selectedRows) return true;
-        try {
-          await Promise.all(selectedRows.map((row) => removeUser(row.id!)));
-          hide();
-          message.success('Deleted successfully');
-          actionRef.current?.reloadAndRest?.();
-          return true;
-        } catch (error) {
-          hide();
-          message.error('Delete failed, please try again');
-          return false;
-        }
-      },
+      onOk: async () => handleRemove(selectedRows, isDrawer),
     });
   };
 
@@ -123,14 +128,35 @@ const UserList: React.FC = () => {
     {
       title: 'User Name',
       dataIndex: 'userName',
+      hideInSearch: true,
+      render: (dom, entity) => {
+        return (
+          <a
+            onClick={() => {
+              setCurrentRow(entity);
+              handleUpdateModalOpen(true);
+              setIsEditMode(false);
+            }}
+          >
+            {dom}
+          </a>
+        );
+      },
     },
     {
       title: 'Email',
       dataIndex: 'email',
+      hideInSearch: true,
+    },
+    {
+      title: 'User Name / Email',
+      dataIndex: 'search',
+      hideInTable: true,
     },
     {
       title: 'Roles',
       dataIndex: 'roles',
+      hideInSearch: true,
       render: (_, row) => (
         <div>{row.roles?.map((role, index) => <div key={index}>{role}</div>) || '-'}</div>
       ),
@@ -144,6 +170,7 @@ const UserList: React.FC = () => {
           key="update"
           onClick={() => {
             handleUpdateModalOpen(true);
+            setIsEditMode(true);
             setCurrentRow(record);
           }}
         >
@@ -152,7 +179,7 @@ const UserList: React.FC = () => {
         <a
           key="delete"
           onClick={async () => {
-            await handleRemove([record]);
+            await confirmDelete([record]);
           }}
           style={{ color: 'red' }}
         >
@@ -210,7 +237,7 @@ const UserList: React.FC = () => {
         >
           <Button
             onClick={async () => {
-              await handleRemove(selectedRowsState);
+              await confirmDelete(selectedRowsState);
               setSelectedRows([]);
             }}
           >
@@ -221,64 +248,47 @@ const UserList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      <AddForm
-        onCancel={() => handleModalOpen(false)}
-        onSubmit={async (value) => {
-          const success = await handleAdd(value);
-          if (success) {
-            handleModalOpen(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        visible={createModalOpen}
-      />
 
-      <UpdateForm
+      <UpdateFormDrawer
+        onCancel={() => {
+          handleUpdateModalOpen(false);
+          setTimeout(() => setCurrentRow(undefined), 300);
+        }}
         onSubmit={async (value) => {
           const success = await handleUpdate(value);
           if (success) {
-            handleUpdateModalOpen(false);
-            setCurrentRow(undefined);
             if (actionRef.current) {
               actionRef.current.reload();
             }
+            return true;
           }
-        }}
-        onCancel={() => {
-          handleUpdateModalOpen(false);
-          if (!showDetail) {
-            setCurrentRow(undefined);
-          }
+          return false;
         }}
         visible={updateModalOpen}
         initialValues={currentRow || {}}
+        isEditMode={isEditMode}
+        handleDelete={async () => confirmDelete([currentRow!], true)}
       />
 
-      <Drawer
-        width={700}
-        open={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
+      <UpdateFormDrawer
+        onSubmit={async (value) => {
+          const success = await handleAdd(value as API.RegisterUserRequest);
+          if (success) {
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+            return true;
+          }
+          return false;
         }}
-        closable={false}
-      >
-        {currentRow?.userName && (
-          <ProDescriptions<API.User>
-            column={1}
-            title={currentRow?.userName}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.id,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.User>[]}
-          />
-        )}
-      </Drawer>
+        onCancel={() => {
+          handleModalOpen(false);
+        }}
+        visible={createModalOpen}
+        initialValues={{}}
+        isEditMode={true}
+        isAddMode={true}
+      />
     </PageContainer>
   );
 };

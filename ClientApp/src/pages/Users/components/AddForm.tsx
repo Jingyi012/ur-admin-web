@@ -43,34 +43,53 @@ const AddForm: React.FC<AddFormProps> = ({ onCancel, onSubmit, visible }) => {
           name="email"
           label="Email"
           placeholder="Please enter email"
-          rules={[{ required: true, message: 'Please enter email' }]}
+          rules={[
+            { required: true, message: 'Please enter email' },
+            {
+              type: 'email',
+              message: 'Please enter a valid email address',
+            },
+          ]}
         />
         <ProFormText
           name="userName"
           label="User Name"
           placeholder="Please enter user name"
-          rules={[{ required: true, message: 'Please enter user name' }]}
+          rules={[
+            { required: true, message: 'Please enter user name' },
+            {
+              min: 6,
+              message: 'User name must be at least 3 characters long',
+            },
+            {
+              max: 20,
+              message: 'User name cannot exceed 20 characters',
+            },
+            {
+              pattern: /^[a-zA-Z0-9_]+$/,
+              message: 'User name can only contain letters, numbers, and underscores',
+            },
+          ]}
         />
         <ProFormText.Password
           name="password"
           label="Password"
           placeholder="Please enter password"
-          rules={[{ required: true, message: 'Please enter a password' }]}
-        />
-        <ProFormText.Password
-          name="confirmPassword"
-          label="Confirm Password"
-          placeholder="Please enter confirm password"
           rules={[
-            { required: true, message: 'Please enter confirm password' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error('Passwords do not match!'));
-              },
-            }),
+            { required: true, message: 'Please enter a password' },
+            { min: 8, message: 'Password must be at least 8 characters long' },
+            {
+              pattern: /[A-Z]/,
+              message: 'Password must contain at least one uppercase letter',
+            },
+            {
+              pattern: /[0-9]/,
+              message: 'Password must contain at least one number',
+            },
+            {
+              pattern: /[!@#$%^&*(),.?":{}|<>]/,
+              message: 'Password must contain at least one special character',
+            },
           ]}
         />
         <ProFormSelect

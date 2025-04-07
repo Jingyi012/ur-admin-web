@@ -40,19 +40,33 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ onCancel, onSubmit, visible, in
           name="email"
           label="Email"
           placeholder="Please enter email"
-          rules={[{ required: true, message: 'Please enter email' }]}
+          rules={[
+            { required: true, message: 'Please enter email' },
+            {
+              type: 'email',
+              message: 'Please enter a valid email address',
+            },
+          ]}
         />
         <ProFormText
           name="userName"
           label="User Name"
           placeholder="Please enter user name"
-          rules={[{ required: true, message: 'Please enter user name' }]}
-        />
-        <ProFormText.Password
-          name="password"
-          label="Password"
-          placeholder="Please enter password"
-          rules={[{ required: true, message: 'Please enter a password' }]}
+          rules={[
+            { required: true, message: 'Please enter user name' },
+            {
+              min: 6,
+              message: 'User name must be at least 3 characters long',
+            },
+            {
+              max: 20,
+              message: 'User name cannot exceed 20 characters',
+            },
+            {
+              pattern: /^[a-zA-Z0-9_]+$/,
+              message: 'User name can only contain letters, numbers, and underscores',
+            },
+          ]}
         />
         <ProFormSelect
           name="roles"

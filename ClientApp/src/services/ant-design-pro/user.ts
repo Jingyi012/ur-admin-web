@@ -34,12 +34,15 @@ export async function addUser(
     email: string;
     userName: string;
     password: string;
-    confirmPassword: string;
     roles: string[];
   },
   options?: { [key: string]: any },
 ) {
-  return httpClient.post(`${API_VERSION}/user`, body, { ...options });
+  return httpClient.post(
+    `${API_VERSION}/user`,
+    { confirmPassword: body.password, ...body },
+    { ...options },
+  );
 }
 
 /** Update an existing User */
