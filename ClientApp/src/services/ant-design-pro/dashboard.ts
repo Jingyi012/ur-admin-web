@@ -9,3 +9,42 @@ export async function getDashboardStatistic(options?: { [key: string]: any }) {
     ...options,
   });
 }
+
+export async function getGaStatistic(
+  params: {
+    startDate: string;
+    endDate: string;
+  },
+  options?: { [key: string]: any },
+) {
+  return httpClient.get(`/ga/statistics`, {
+    params,
+    ...options,
+  });
+}
+
+export async function GetGaPageViews(
+  params: {
+    startDate: string;
+    endDate: string;
+  },
+  options?: { [key: string]: any },
+) {
+  return httpClient.get(`/ga/page-views`, {
+    params,
+    ...options,
+  });
+}
+
+export async function GetGaCityCountryUserStats(
+  params: {
+    startDate: string;
+    endDate: string;
+  },
+  options?: { [key: string]: any },
+) {
+  return httpClient.get(`/ga/city-country-stats`, {
+    params,
+    ...options,
+  });
+}

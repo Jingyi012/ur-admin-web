@@ -4,19 +4,18 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import InfoCard from './components/InfoCard';
 import { getDashboardStatistic } from '@/services/ant-design-pro/dashboard';
-import { message } from 'antd';
+import { Divider, message, Space } from 'antd';
+import GaStatistic from './components/GaStatistic';
+import PageAnalyticsTable from './components/PageAnalyticsTable';
+import UserOriginAnalytics from './components/UserCountryCity';
 
 const Dashboard: React.FC = () => {
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>([
-    dayjs().subtract(7, 'day'),
-    dayjs(),
-  ]);
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(7, 'day'), dayjs()]);
   const [dashboardStatistic, setDashboardStatistic] = useState<API.DashboardStaistic>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleDateChange = (dates: [Dayjs, Dayjs] | null, dateStrings: [string, string]) => {
+  const handleDateChange = (dates: [Dayjs, Dayjs], dateStrings: [string, string]) => {
     setDateRange(dates);
-    // Handle date range change logic here if needed
   };
 
   const fetchStatistic = async () => {
@@ -73,20 +72,39 @@ const Dashboard: React.FC = () => {
           href="/enquiries"
         />
       </div>
-      <ProCard
-        title="Insights"
-        style={{
-          marginTop: 16,
-        }}
-      >
+      <ProCard title="Insights" style={{ marginTop: 16 }}>
         <ProFormDateRangePicker
           name="dateRange"
           label="Select Date Range"
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 24 }}
           fieldProps={{
-            value: dateRange, // Ensure the picker value is controlled by state
+            value: dateRange,
             onChange: handleDateChange,
           }}
+        />
+
+        <Divider orientation="left" orientationMargin={0}>
+          Overview
+        </Divider>
+        <GaStatistic
+          startDate={dateRange[0].format('YYYY-MM-DD')}
+          endDate={dateRange[1].format('YYYY-MM-DD')}
+        />
+
+        <Divider orientation="left" orientationMargin={0}>
+          Page Analytics
+        </Divider>
+        <PageAnalyticsTable
+          startDate={dateRange[0].format('YYYY-MM-DD')}
+          endDate={dateRange[1].format('YYYY-MM-DD')}
+        />
+
+        <Divider orientation="left" orientationMargin={0}>
+          User Locations
+        </Divider>
+        <UserOriginAnalytics
+          startDate={dateRange[0].format('YYYY-MM-DD')}
+          endDate={dateRange[1].format('YYYY-MM-DD')}
         />
       </ProCard>
     </PageContainer>

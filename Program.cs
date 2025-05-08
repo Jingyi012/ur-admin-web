@@ -1,3 +1,5 @@
+using ur_admin_web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Register Services
@@ -16,6 +18,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<GAService>();
 
 // Build the app
 var app = builder.Build();

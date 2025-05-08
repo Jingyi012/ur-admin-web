@@ -175,4 +175,25 @@ declare namespace API {
     totalProjects: number;
     totalPendingEnquiries: number;
   };
+
+  type GaStatistic = {
+    activeUsers: number;
+    newUsers: number;
+    averageSessionDuration: number;
+    engagementRate: number;
+  };
+
+  type GaPageViewsAnalytics = {
+    pagePath: string;
+    activeUsers: number;
+    screenPageViews: number;
+    engagementRate: number;
+    newUsers: number;
+  };
+
+  type GaUserOriginStatistic = {
+    city: string;
+    country: string;
+    activeUsers: number;
+  };
 }

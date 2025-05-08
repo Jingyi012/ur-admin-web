@@ -13,7 +13,7 @@ const InfoCard: React.FC<{
     <div
       style={{
         backgroundColor: token.colorBgContainer,
-        boxShadow: token.boxShadow,
+        //boxShadow: token.boxShadow,
         borderRadius: '8px',
         fontSize: '14px',
         color: token.colorTextSecondary,
@@ -66,7 +66,7 @@ const InfoCard: React.FC<{
       >
         {desc}
       </div>
-      <a href={href} target="_blank" rel="noreferrer">
+      <a href={href} rel="noreferrer">
         View more {'>'}
       </a>
     </div>
