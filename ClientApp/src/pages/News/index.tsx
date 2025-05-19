@@ -355,6 +355,7 @@ const NewsList: React.FC = () => {
           </Button>,
         ]}
         dataSource={newsList}
+        pagination={{ pageSize: 20 }}
         request={(params: any) =>
           fetchData({
             pageNumber: params.current ?? 1,

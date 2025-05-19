@@ -125,7 +125,7 @@ namespace ur_admin_web.Controllers
 
         // Dynamic PUT method
         [HttpPut("{*path}")]
-        public async Task<IActionResult> DynamicPut(string path, [FromBody] JsonElement requestBody)
+        public async Task<IActionResult> DynamicPut(string path)
         {
             // Build the target URL
             var targetUrl = $"{_baseUrl}/{path}";
@@ -133,9 +133,46 @@ namespace ur_admin_web.Controllers
             try
             {
                 using var requestMessage = new HttpRequestMessage(HttpMethod.Put, targetUrl);
+                // Detect if the request is JSON or FormData
+                if (Request.ContentType != null && Request.ContentType.Contains("application/json"))
+                {
+                    // Handle JSON requests
+                    using var reader = new StreamReader(Request.Body);
+                    var requestBody = await reader.ReadToEndAsync();
+                    requestMessage.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+                }
+                else if (Request.ContentType != null && Request.ContentType.Contains("multipart/form-data"))
+                {
+                    // Handle FormData (Files + Fields)
+                    var formCollection = await Request.ReadFormAsync();
+                    var multipartContent = new MultipartFormDataContent();
 
-                // Forward request body
-                requestMessage.Content = new StringContent(requestBody.GetRawText(), Encoding.UTF8, "application/json");
+                    // Add form fields
+                    foreach (var field in formCollection.Keys)
+                    {
+                        if (formCollection[field].Count > 0)
+                        {
+                            multipartContent.Add(new StringContent(formCollection[field]), field);
+                        }
+                    }
+
+                    // Add files
+                    foreach (var file in formCollection.Files)
+                    {
+                        if (file.Length > 0)
+                        {
+                            var streamContent = new StreamContent(file.OpenReadStream());
+                            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                            multipartContent.Add(streamContent, file.Name, file.FileName);
+                        }
+                    }
+
+                    requestMessage.Content = multipartContent;
+                }
+                else
+                {
+                    return BadRequest("Unsupported Content-Type");
+                }
 
                 // Forward Authorization Header
                 if (Request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues value))

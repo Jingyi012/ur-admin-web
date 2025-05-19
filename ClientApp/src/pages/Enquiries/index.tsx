@@ -273,6 +273,7 @@ const EnquiryList: React.FC = () => {
           labelWidth: 'auto',
         }}
         dataSource={enquiryList}
+        pagination={{ pageSize: 20, showSizeChanger: true }}
         request={(params: any) =>
           fetchData({
             pageNumber: params.current ?? 1,

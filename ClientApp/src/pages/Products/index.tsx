@@ -6,7 +6,6 @@ import { Button, message, Modal, Tag, UploadFile } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   addProduct,
-  getProductCategory,
   getProducts,
   removeProduct,
   updateProduct,
@@ -17,6 +16,7 @@ import {
   removeProductImage,
 } from '@/services/ant-design-pro/productImage';
 import UpdateFormDrawer from './components/UpdateFormDrawer';
+import { getProductCategoryList } from '@/services/ant-design-pro/productCategory';
 
 const ProductsList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
@@ -66,7 +66,7 @@ const ProductsList: React.FC = () => {
   const fetchProductCategory = async () => {
     try {
       setLoading(true);
-      const response = await getProductCategory();
+      const response = await getProductCategoryList();
       setProductCategory(response?.data.data || []);
     } catch {
       message.error('Failed to fetch product category.');
@@ -356,6 +356,7 @@ const ProductsList: React.FC = () => {
           </Button>,
         ]}
         dataSource={productList}
+        pagination={{ pageSize: 20 }}
         request={(params: any) =>
           fetchData({
             pageNumber: params.current ?? 1,

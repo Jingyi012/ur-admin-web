@@ -8,7 +8,7 @@ export async function getProductImagesById(id: number, options?: { [key: string]
   return httpClient.get(`${API_VERSION}/product/${id}/images`, { ...options });
 }
 
-/** Add a new Product */
+/** Add a new Product Image */
 export async function addProductImages(
   productId: number,
   imageFiles: any[],
@@ -33,7 +33,7 @@ export async function addProductImages(
   });
 }
 
-/** Update an existing Product */
+/** Reorder Product Image */
 export async function productImageReorder(
   body: {
     productId: number;
@@ -47,7 +47,7 @@ export async function productImageReorder(
   return httpClient.put(`${API_VERSION}/product/images/reorder`, body, { ...options });
 }
 
-/** Delete a Product */
+/** Delete a Product Image */
 export async function removeProductImage(
   params: {
     imageUrl: string;

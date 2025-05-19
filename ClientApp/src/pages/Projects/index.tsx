@@ -352,6 +352,7 @@ const ProjectsList: React.FC = () => {
           </Button>,
         ]}
         dataSource={projectList}
+        pagination={{ pageSize: 20 }}
         request={(params: any) =>
           fetchData({
             pageNumber: params.current ?? 1,

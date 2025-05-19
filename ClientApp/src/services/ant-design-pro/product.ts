@@ -4,11 +4,6 @@ import httpClient from './httpService';
 // Define the API version
 const API_VERSION = '/v1';
 
-/** Get Product Category */
-export async function getProductCategory(options?: { [key: string]: any }) {
-  return httpClient.get(`${API_VERSION}/productCategory`, { ...options });
-}
-
 /** Get Product List */
 export async function getProducts(
   params: {

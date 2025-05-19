@@ -8,7 +8,7 @@ export async function getNewsImagesById(id: number, options?: { [key: string]: a
   return httpClient.get(`${API_VERSION}/news/${id}/images`, { ...options });
 }
 
-/** Add a new News */
+/** Add a new News Image */
 export async function addNewsImages(
   newsId: number,
   imageFiles: any[],
@@ -33,7 +33,7 @@ export async function addNewsImages(
   });
 }
 
-/** Update an existing News */
+/** Reorder News Image */
 export async function newsImageReorder(
   body: {
     newsId: number;
@@ -47,7 +47,7 @@ export async function newsImageReorder(
   return httpClient.put(`${API_VERSION}/news/images/reorder`, body, { ...options });
 }
 
-/** Delete a News */
+/** Delete a News Image */
 export async function removeNewsImage(
   params: {
     imageUrl: string;

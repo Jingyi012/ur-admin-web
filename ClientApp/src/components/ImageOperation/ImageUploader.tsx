@@ -1,9 +1,9 @@
-import React from 'react';
-import { UploadFile } from 'antd';
+import React, { useState } from 'react';
+import { UploadFile, Image } from 'antd';
 import { ProCard, ProFormUploadButton } from '@ant-design/pro-components';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
-import { SortableItem } from './SortableItem'; // Import your SortableItem component
+import { SortableItem } from './SortableItem';
 
 interface ImageUploaderProps {
   title: string;
@@ -21,6 +21,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, fileList, onChange
   );
   const dsensors = useSensors();
 
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>();
+
   const handleFileChange = ({ fileList }: { fileList: UploadFile[] }) => {
     onChange(fileList);
   };
@@ -37,6 +40,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, fileList, onChange
       const updatedList = arrayMove(fileList, oldIndex, newIndex);
       onChange(updatedList);
     }
+  };
+
+  const handlePreview = async (file: UploadFile) => {
+    setPreviewImage(file.url || (file.originFileObj && URL.createObjectURL(file.originFileObj)));
+    setPreviewVisible(true);
   };
 
   return (
@@ -58,6 +66,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, fileList, onChange
               beforeUpload: () => false,
               onRemove: handleRemove,
               onChange: handleFileChange,
+              onPreview: handlePreview,
               listType: 'picture-card',
               multiple: true,
               accept: 'image/*',
@@ -72,6 +81,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, fileList, onChange
           />
         </SortableContext>
       </DndContext>
+      {previewImage && (
+        <Image
+          wrapperStyle={{ display: 'none' }}
+          preview={{
+            visible: previewVisible,
+            onVisibleChange: (visible) => setPreviewVisible(visible),
+            afterOpenChange: (visible) => !visible && setPreviewImage(''),
+          }}
+          src={previewImage}
+        />
+      )}
     </ProCard>
   );
 };

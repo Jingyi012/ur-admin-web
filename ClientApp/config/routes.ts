@@ -46,6 +46,12 @@ export default [
     ],
   },
   {
+    name: 'Product Categories',
+    icon: 'tags',
+    path: '/product-category',
+    component: './ProductCategories',
+  },
+  {
     name: 'Products',
     icon: 'tags',
     path: '/products',

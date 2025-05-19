@@ -8,7 +8,7 @@ export async function getProjectImagesById(id: number, options?: { [key: string]
   return httpClient.get(`${API_VERSION}/project/${id}/images`, { ...options });
 }
 
-/** Add a new Project */
+/** Add a new Project Image */
 export async function addProjectImages(
   projectId: number,
   imageFiles: any[],
@@ -33,7 +33,7 @@ export async function addProjectImages(
   });
 }
 
-/** Update an existing Project */
+/** Reorder Project Image */
 export async function projectImageReorder(
   body: {
     projectId: number;
@@ -47,7 +47,7 @@ export async function projectImageReorder(
   return httpClient.put(`${API_VERSION}/project/images/reorder`, body, { ...options });
 }
 
-/** Delete a Project */
+/** Delete a Project Image */
 export async function removeProjectImage(
   params: {
     imageUrl: string;

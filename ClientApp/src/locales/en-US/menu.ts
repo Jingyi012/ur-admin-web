@@ -54,4 +54,5 @@ export default {
   'menu.Projects': 'Projects',
   'menu.Enquiries': 'Enquiries',
   'menu.Users': 'Users',
+  'menu.Product Categories': 'Product Categories',
 };
