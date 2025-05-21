@@ -19,7 +19,6 @@ const ProductCategoryList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const actionRef = useRef<ActionType>();
   const [imageFile, setImageFile] = useState<any>();
-  const [previewVisible, setPreviewVisible] = useState(false);
 
   // Fetch product categories
   const fetchData = async (params: { pageNumber?: number; pageSize?: number; name?: string }) => {
@@ -143,11 +142,6 @@ const ProductCategoryList: React.FC = () => {
               objectFit: 'cover',
               borderRadius: 4,
               cursor: 'pointer',
-            }}
-            preview={{
-              visible: previewVisible,
-              onVisibleChange: (visible) => setPreviewVisible(visible),
-              afterOpenChange: (visible) => !visible,
             }}
           />
         ) : (
