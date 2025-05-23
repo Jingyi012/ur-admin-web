@@ -5,6 +5,11 @@ const API_VERSION = '/v1';
 
 /** Get User Name List */
 export async function getUserOptions(options?: { [key: string]: any }) {
+  return httpClient.get(`${API_VERSION}/user/options/name`, { ...options });
+}
+
+/** Get User Selection List */
+export async function getUserSelections(options?: { [key: string]: any }) {
   return httpClient.get(`${API_VERSION}/user/options`, { ...options });
 }
 

@@ -4,7 +4,7 @@ import { ProCard, DrawerForm } from '@ant-design/pro-components';
 import { EditOutlined, HistoryOutlined, UserOutlined } from '@ant-design/icons';
 import { ProFormSelect, ProFormTextArea } from '@ant-design/pro-form';
 import { useEffect, useState } from 'react';
-import { getUserOptions } from '@/services/ant-design-pro/user';
+import { getUserSelections } from '@/services/ant-design-pro/user';
 import { getEnquiryHistory } from '@/services/ant-design-pro/enquiry';
 const { Text } = Typography;
 export type ViewDetailsDrawerProps = {
@@ -32,7 +32,7 @@ const ViewDetails: React.FC<ViewDetailsDrawerProps> = ({
   const fetchUserList = async () => {
     try {
       setLoading(true);
-      const response = await getUserOptions();
+      const response = await getUserSelections();
       setUserList(response?.data.data || []);
     } catch {
       message.error('Failed to fetch users data.');
@@ -221,7 +221,10 @@ const ViewDetails: React.FC<ViewDetailsDrawerProps> = ({
             <ProFormSelect
               name="assignedTo"
               label="Assigned To"
-              options={userList}
+              options={userList.map((user) => ({
+                label: user.userName,
+                value: user.id,
+              }))}
               placeholder="Select a user"
               showSearch
               rules={[{ required: true, message: 'Please select a user' }]}
