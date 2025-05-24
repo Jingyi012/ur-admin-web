@@ -4,13 +4,13 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import InfoCard from './components/InfoCard';
 import { getDashboardStatistic } from '@/services/ant-design-pro/dashboard';
-import { Divider, message, Space } from 'antd';
+import { Divider, message } from 'antd';
 import GaStatistic from './components/GaStatistic';
 import PageAnalyticsTable from './components/PageAnalyticsTable';
 import UserOriginAnalytics from './components/UserCountryCity';
 
 const Dashboard: React.FC = () => {
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(7, 'day'), dayjs()]);
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().startOf('month'), dayjs()]);
   const [dashboardStatistic, setDashboardStatistic] = useState<API.DashboardStaistic>();
   const [loading, setLoading] = useState<boolean>(false);
 

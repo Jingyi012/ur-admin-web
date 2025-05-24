@@ -6,6 +6,7 @@ import { ProFormSelect, ProFormTextArea } from '@ant-design/pro-form';
 import { useEffect, useState } from 'react';
 import { getUserSelections } from '@/services/ant-design-pro/user';
 import { getEnquiryHistory } from '@/services/ant-design-pro/enquiry';
+import { formatDateTime } from '@/helper/dateFormatHelper';
 const { Text } = Typography;
 export type ViewDetailsDrawerProps = {
   onCancel: () => void;
@@ -73,11 +74,6 @@ const ViewDetails: React.FC<ViewDetailsDrawerProps> = ({
       color: 'default',
     };
     return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString();
   };
 
   useEffect(() => {
@@ -198,17 +194,35 @@ const ViewDetails: React.FC<ViewDetailsDrawerProps> = ({
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Created At">
-            {formatDate(initialValues.created)}
+            {formatDateTime(initialValues.created)}
           </Descriptions.Item>
           <Descriptions.Item label="Last Updated">
-            {formatDate(initialValues.lastModified)}
+            {formatDateTime(initialValues.lastModified)}
           </Descriptions.Item>
         </Descriptions>
 
         <Descriptions column={1} style={{ marginTop: 16 }}>
-          <Descriptions.Item label="Message">
-            <div>{initialValues.message || '-'}</div>
-          </Descriptions.Item>
+          {(initialValues.message || '-').split('\n').map((line, index) => {
+            const [label, ...rest] = line.split(':');
+            if (rest.length > 0) {
+              let value = rest.join(':').trim();
+              const trimmedLabel = label.trim();
+              if (trimmedLabel === 'Preferred Date & Time') {
+                value = formatDateTime(value);
+              }
+              return (
+                <Descriptions.Item key={`desc-${index}`} label={trimmedLabel}>
+                  {value}
+                </Descriptions.Item>
+              );
+            }
+
+            return (
+              <Descriptions.Item key={`desc-${index}`} label="Note">
+                {line}
+              </Descriptions.Item>
+            );
+          })}
         </Descriptions>
       </ProCard>
 

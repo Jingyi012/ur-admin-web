@@ -2,10 +2,12 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
 import { Button, message, Modal, Select } from 'antd';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getEnquiries, removeEnquiry, updateEnquiry } from '@/services/ant-design-pro/enquiry';
 import { EnquiryStatus, EnquiryType } from '@/enum/EnquiryEnum';
 import ViewDetails from './components/ViewDetails';
+import { formatDateTime } from '@/helper/dateFormatHelper';
+import { getUserSelections } from '@/services/ant-design-pro/user';
 
 const EnquiryList: React.FC = () => {
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
@@ -17,6 +19,19 @@ const EnquiryList: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<API.Enquiry[]>([]);
   const [enquiryList, setEnquiryList] = useState<API.Enquiry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [userList, setUserList] = useState<API.User[]>([]);
+
+  const fetchUserList = async () => {
+    try {
+      setLoading(true);
+      const response = await getUserSelections();
+      setUserList(response?.data.data || []);
+    } catch {
+      message.error('Failed to fetch users data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchData = async (params: {
     pageNumber?: number;
@@ -200,6 +215,15 @@ const EnquiryList: React.FC = () => {
     {
       title: 'Assigned To',
       dataIndex: 'assignedTo',
+      valueType: 'select',
+      fieldProps: {
+        options: userList.map((user) => ({
+          label: user.userName,
+          value: user.id,
+        })),
+        showSearch: true,
+        allowClear: true,
+      },
     },
     {
       title: 'Remarks',
@@ -236,12 +260,18 @@ const EnquiryList: React.FC = () => {
       valueType: 'dateTime',
       hideInTable: true,
       hideInSearch: true,
+      render: (_, record) => {
+        return record.created ? formatDateTime(record.created) : '-';
+      },
     },
     {
       title: 'Last Updated Time',
       dataIndex: 'lastModified',
       valueType: 'dateTime',
       hideInSearch: true,
+      render: (_, record) => {
+        return record.lastModified ? formatDateTime(record.lastModified) : '-';
+      },
     },
     {
       title: 'Action',
@@ -261,6 +291,11 @@ const EnquiryList: React.FC = () => {
       ],
     },
   ];
+
+  useEffect(() => {
+    fetchUserList();
+    //fetchData({ pageNumber: 1, pageSize: 20 });
+  }, []);
 
   return (
     <PageContainer>

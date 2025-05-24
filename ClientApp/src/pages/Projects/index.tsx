@@ -16,6 +16,7 @@ import {
   projectImageReorder,
   removeProjectImage,
 } from '@/services/ant-design-pro/projectImage';
+import { formatDate } from '@/helper/dateFormatHelper';
 
 const ProjectsList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
@@ -264,8 +265,7 @@ const ProjectsList: React.FC = () => {
       hideInSearch: true,
       render: (_, row) => {
         if (!row.date) return '-';
-        const date = new Date(row.date);
-        return date.toLocaleDateString('en-CA');
+        return formatDate(row.date);
       },
     },
     {

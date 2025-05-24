@@ -11,6 +11,7 @@ import {
   removeNewsImage,
 } from '@/services/ant-design-pro/newsImage';
 import UpdateFormDrawer from './components/UpdateFormDrawer';
+import { formatDate } from '@/helper/dateFormatHelper';
 
 const NewsList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
@@ -276,8 +277,7 @@ const NewsList: React.FC = () => {
       hideInSearch: true,
       render: (_, row) => {
         if (!row.date) return '-';
-        const date = new Date(row.date);
-        return date.toLocaleDateString('en-CA');
+        return formatDate(row.date);
       },
     },
     {

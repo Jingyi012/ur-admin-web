@@ -18,7 +18,7 @@ namespace ur_admin_web.Controllers
         public async Task<IActionResult> GetStatistic([FromQuery] string startDate, [FromQuery] string endDate)
         {
             var result = await _gaService.GetStatistic(startDate, endDate);
-            return result is not null ? Ok(result) : NotFound("No statistics found.");
+            return Ok(result);
         }
 
         [HttpGet("page-views")]

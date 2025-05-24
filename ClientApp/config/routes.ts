@@ -47,7 +47,7 @@ export default [
   },
   {
     name: 'Product Categories',
-    icon: 'tags',
+    icon: 'AppstoreOutlined',
     path: '/product-category',
     component: './ProductCategories',
   },
