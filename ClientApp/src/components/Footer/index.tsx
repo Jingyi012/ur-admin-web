@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
       style={{
         background: 'none',
       }}
-      copyright="United Panel System (M) Sdn Bhd"
+      copyright="United Panel-System (M) Sdn Bhd"
     />
   );
 };

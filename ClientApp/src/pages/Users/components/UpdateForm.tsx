@@ -73,7 +73,6 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ onCancel, onSubmit, visible, in
           label="Roles"
           mode="multiple"
           options={[
-            { label: 'User', value: ROLE.Basic },
             { label: 'Admin', value: ROLE.Admin },
             { label: 'Super Admin', value: ROLE.SuperAdmin },
           ]}

@@ -15,7 +15,7 @@ const Settings: ProLayoutProps & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'United Panel System (M) Sdn Bhd',
+  title: 'United Panel-System (M) Sdn Bhd',
   pwa: true,
   logo: '/logo.png',
   iconfontUrl: '',

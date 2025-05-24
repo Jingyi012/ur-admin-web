@@ -29,23 +29,6 @@ export default [
     component: './Dashboard',
   },
   {
-    path: '/admin',
-    name: 'admin',
-    icon: 'crown',
-    access: 'canAdmin',
-    routes: [
-      {
-        path: '/admin',
-        redirect: '/admin/sub-page',
-      },
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        component: './Admin',
-      },
-    ],
-  },
-  {
     name: 'Product Categories',
     icon: 'AppstoreOutlined',
     path: '/product-category',
@@ -79,6 +62,7 @@ export default [
     name: 'Users',
     icon: 'team',
     path: '/users',
+    access: 'canSuperAdmin',
     component: './Users',
   },
   {
