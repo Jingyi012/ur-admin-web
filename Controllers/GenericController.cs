@@ -37,6 +37,9 @@ namespace ur_admin_web.Controllers
                         value.ToString().Replace("Bearer ", ""));
                 }
 
+                var origin = $"{Request.Scheme}://{Request.Host}";
+                requestMessage.Headers.Add("origin", origin);
+
                 // Forward the request
                 var response = await _httpClient.SendAsync(requestMessage);
 
@@ -109,6 +112,9 @@ namespace ur_admin_web.Controllers
                     requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", value.ToString().Replace("Bearer ", ""));
                 }
 
+                var origin = $"{Request.Scheme}://{Request.Host}";
+                requestMessage.Headers.Add("origin", origin);
+
                 // Forward the request
                 var response = await _httpClient.SendAsync(requestMessage);
                 var result = await response.Content.ReadAsStringAsync();
@@ -180,6 +186,9 @@ namespace ur_admin_web.Controllers
                     requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
                         value.ToString().Replace("Bearer ", ""));
                 }
+
+                var origin = $"{Request.Scheme}://{Request.Host}";
+                requestMessage.Headers.Add("origin", origin);
 
                 // Forward the request
                 var response = await _httpClient.SendAsync(requestMessage);

@@ -216,7 +216,7 @@ const Login: React.FC = () => {
             }}
           >
             <Link
-              to="/user/forgotPassword"
+              to="/user/forgot-password"
               style={{
                 float: 'right',
                 marginBottom: 24,

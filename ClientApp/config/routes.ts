@@ -20,6 +20,16 @@ export default [
         path: '/user/login',
         component: './User/Login',
       },
+      {
+        name: 'Reset Password',
+        path: '/user/reset-password',
+        component: './user/ResetPassword/index.tsx',
+      },
+      {
+        name: 'Forgot Password',
+        path: '/user/forgot-password',
+        component: './user/ForgotPassword/index.tsx',
+      },
     ],
   },
   {
