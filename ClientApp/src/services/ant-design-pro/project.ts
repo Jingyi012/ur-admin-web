@@ -10,7 +10,7 @@ export async function getProjects(
     pageSize?: number;
     name?: string;
     isActive?: boolean;
-    isAdmin?: boolean;
+    isPaginated?: boolean;
   },
   options?: { [key: string]: any },
 ) {

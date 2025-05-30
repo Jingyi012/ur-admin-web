@@ -32,43 +32,40 @@ const InfoCard: React.FC<{
       >
         <div
           style={{
-            width: 48,
-            height: 48,
-            lineHeight: '22px',
-            backgroundSize: '100%',
-            textAlign: 'center',
-            padding: '8px 16px 16px 12px',
-            color: '#FFF',
-            fontWeight: 'bold',
-            backgroundImage:
-              "url('https://gw.alipayobjects.com/zos/bmw-prod/daaf8d50-8e6d-4251-905d-676a24ddfa12.svg')",
+            display: 'flex',
+            gap: '16px',
+            alignItems: 'center',
           }}
         >
-          {index}
-        </div>
-        <div
-          style={{
-            fontSize: '16px',
-            color: token.colorText,
-            paddingBottom: 8,
-          }}
-        >
-          {title}
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              backgroundColor: token.colorPrimaryBg,
+              color: token.colorPrimary,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              fontWeight: 600,
+              flexShrink: 0,
+            }}
+          >
+            {index}
+          </div>
+          <div
+            style={{
+              fontSize: '16px',
+              color: token.colorText,
+              fontWeight: 500,
+              lineHeight: '1.4',
+            }}
+          >
+            {title}
+          </div>
         </div>
       </div>
-      <div
-        style={{
-          fontSize: '14px',
-          color: token.colorTextSecondary,
-          lineHeight: '22px',
-          marginBottom: 8,
-        }}
-      >
-        {desc}
-      </div>
-      <a href={href} rel="noreferrer">
-        View more {'>'}
-      </a>
     </div>
   );
 };

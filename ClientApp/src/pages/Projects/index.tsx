@@ -42,7 +42,7 @@ const ProjectsList: React.FC = () => {
       const response = await getProjects({
         pageNumber: params.pageNumber ?? 1,
         pageSize: params.pageSize ?? 20,
-        isAdmin: true,
+        isPaginated: true,
         ...params,
       });
 
