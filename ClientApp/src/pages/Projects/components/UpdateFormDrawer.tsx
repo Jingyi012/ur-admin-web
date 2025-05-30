@@ -62,7 +62,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
     <DrawerForm
       title={isAddMode ? 'Add Project' : initialValues.name}
       open={visible}
-      width={700}
+      width={800}
       form={form}
       onFinish={async (values) => {
         const success = await onSubmit(values, fileList);

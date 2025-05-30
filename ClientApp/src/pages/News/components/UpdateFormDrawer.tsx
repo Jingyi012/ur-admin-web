@@ -65,7 +65,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
     <DrawerForm
       title={isAddMode ? 'Add News' : initialValues.title}
       open={visible}
-      width={700}
+      width={800}
       form={form}
       onFinish={async (values) => {
         const success = await onSubmit(values, fileList);
@@ -173,7 +173,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
 
         <Row gutter={16}>
           <Col span={24}>
-            <ProForm.Item name="description" label="News Description">
+            <ProForm.Item name="description" label="Description">
               <QuillEditor
                 value={content}
                 onChange={(newContent) => setContent(newContent)}

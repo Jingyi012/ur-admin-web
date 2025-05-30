@@ -93,7 +93,7 @@ const ViewDetails: React.FC<ViewDetailsDrawerProps> = ({
         </div>
       }
       open={visible}
-      width={750}
+      width={800}
       onFinish={async (values) => {
         const success = await onSubmit({
           id: initialValues.id,

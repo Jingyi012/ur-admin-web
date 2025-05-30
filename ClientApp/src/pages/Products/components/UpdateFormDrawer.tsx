@@ -4,11 +4,13 @@ import {
   ProFormText,
   ProFormTextArea,
   DrawerForm,
+  ProForm,
 } from '@ant-design/pro-components';
 import { ProCard } from '@ant-design/pro-components';
 import React, { useEffect, useState } from 'react';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import ImageUploader from '@/components/ImageOperation/ImageUploader';
+import QuillEditor from '@/components/RichTextEditor/QuillEditor';
 
 export type FormValueType = Partial<API.Products>;
 
@@ -38,6 +40,8 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [savedFileList, setSavedFileList] = useState<UploadFile[]>([]);
 
+  const [content, setContent] = useState('');
+
   const categoryOptions = productCategories.map((category) => ({
     label: category.name,
     value: category.id,
@@ -56,6 +60,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
       setFileList(existingFileList);
       setSavedFileList(existingFileList);
       setIsEditing(isEditMode);
+      setContent(initialValues.description || '');
     } else {
       setFileList([]);
       setSavedFileList([]);
@@ -67,7 +72,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
     <DrawerForm
       title={isAddMode ? 'Add Product' : initialValues.name}
       open={visible}
-      width={700}
+      width={800}
       form={form}
       onFinish={async (values) => {
         const success = await onSubmit(values, fileList);
@@ -172,13 +177,13 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
 
         <Row gutter={16}>
           <Col span={24}>
-            <ProFormTextArea
-              name="description"
-              label="Description"
-              placeholder={isEditing ? 'Please enter description' : ''}
-              rules={[{ required: false, message: 'Please enter description' }]}
-              disabled={!isEditing}
-            />
+            <ProForm.Item name="description" label="Description">
+              <QuillEditor
+                value={content}
+                onChange={(newContent) => setContent(newContent)}
+                isEditMode={isEditing}
+              />
+            </ProForm.Item>
           </Col>
         </Row>
       </ProCard>
