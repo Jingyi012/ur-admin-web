@@ -314,7 +314,7 @@ const ProductsList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          Update
+          Edit
         </a>,
         <a
           key="delete"

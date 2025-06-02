@@ -42,24 +42,28 @@ export default [
     name: 'Product Categories',
     icon: 'AppstoreOutlined',
     path: '/product-category',
+    access: 'canAdmin',
     component: './ProductCategories',
   },
   {
     name: 'Products',
     icon: 'tags',
     path: '/products',
+    access: 'canAdmin',
     component: './Products',
   },
   {
     name: 'News',
     icon: 'read',
     path: '/news',
+    access: 'canAdmin',
     component: './News',
   },
   {
     name: 'Projects',
     icon: 'project',
     path: '/projects',
+    access: 'canAdmin',
     component: './Projects',
   },
   {
@@ -72,7 +76,7 @@ export default [
     name: 'Users',
     icon: 'team',
     path: '/users',
-    access: 'canSuperAdmin',
+    access: 'canAdmin',
     component: './Users',
   },
   {

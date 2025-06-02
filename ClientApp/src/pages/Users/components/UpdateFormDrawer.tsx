@@ -160,7 +160,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
           options={[
             { label: 'User', value: ROLE.Basic },
             { label: 'Admin', value: ROLE.Admin },
-            { label: 'Super Admin', value: ROLE.SuperAdmin },
+            // { label: 'Super Admin', value: ROLE.SuperAdmin },
           ]}
           placeholder="Select roles"
           rules={[{ required: true, message: 'Please select at least one role' }]}

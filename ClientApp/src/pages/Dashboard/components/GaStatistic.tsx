@@ -30,7 +30,6 @@ const DashboardAnalytics: React.FC<DashboardAnalyticsProps> = ({ startDate, endD
       if (response.data) {
         setGaStatistic(response.data);
       } else {
-        message.error('Failed to fetch GA data');
         setGaStatistic({
           activeUsers: 0,
           newUsers: 0,
