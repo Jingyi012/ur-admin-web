@@ -84,7 +84,7 @@ const Login: React.FC = () => {
       if (response.data.succeeded) {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
-          defaultMessage: '登录成功！',
+          defaultMessage: 'Login successful!',
         });
 
         localStorage.setItem('currentUser', JSON.stringify(response.data.data));
@@ -103,9 +103,8 @@ const Login: React.FC = () => {
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',
-        defaultMessage: '登录失败，请重试！',
+        defaultMessage: 'Login failed, please try again!',
       });
-      console.log(error);
       message.error(defaultLoginFailureMessage);
     }
   };
@@ -117,12 +116,12 @@ const Login: React.FC = () => {
         <title>
           {intl.formatMessage({
             id: 'menu.login',
-            defaultMessage: '登录页',
+            defaultMessage: 'Login',
           })}
           {Settings.title && ` - ${Settings.title}`}
         </title>
       </Helmet>
-      <Lang />
+      {/* <Lang /> */}
       <div
         style={{
           flex: '1',
@@ -153,7 +152,7 @@ const Login: React.FC = () => {
                 key: 'account',
                 label: intl.formatMessage({
                   id: 'pages.login.accountLogin.tab',
-                  defaultMessage: '账户密码登录',
+                  defaultMessage: 'Account Login',
                 }),
               },
             ]}
@@ -163,7 +162,7 @@ const Login: React.FC = () => {
             <LoginMessage
               content={intl.formatMessage({
                 id: 'pages.login.accountLogin.errorMessage',
-                defaultMessage: '账户或密码错误(admin/ant.design)',
+                defaultMessage: 'Incorrect username/password',
               })}
             />
           )}
@@ -177,6 +176,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.email.placeholder',
+                  defaultMessage: 'Email',
                 })}
                 rules={[
                   {
@@ -193,7 +193,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码: ant.design',
+                  defaultMessage: 'Password',
                 })}
                 rules={[
                   {
@@ -201,7 +201,7 @@ const Login: React.FC = () => {
                     message: (
                       <FormattedMessage
                         id="pages.login.password.required"
-                        defaultMessage="请输入密码！"
+                        defaultMessage="Please Enter Password!"
                       />
                     ),
                   },
@@ -222,7 +222,7 @@ const Login: React.FC = () => {
                 marginBottom: 24,
               }}
             >
-              <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" />
+              <FormattedMessage id="pages.login.forgotPassword" defaultMessage="forgot password" />
             </Link>
           </div>
         </LoginForm>

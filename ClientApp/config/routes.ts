@@ -53,18 +53,18 @@ export default [
     component: './Products',
   },
   {
-    name: 'News',
-    icon: 'read',
-    path: '/news',
-    access: 'canAdmin',
-    component: './News',
-  },
-  {
     name: 'Projects',
     icon: 'project',
     path: '/projects',
     access: 'canAdmin',
     component: './Projects',
+  },
+  {
+    name: 'News',
+    icon: 'read',
+    path: '/news',
+    access: 'canAdmin',
+    component: './News',
   },
   {
     name: 'Enquiries',

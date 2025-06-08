@@ -59,10 +59,10 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
       submitter={
         isEditing
           ? {
-              searchConfig: {
-                submitText: 'Submit',
-              },
-            }
+            searchConfig: {
+              submitText: 'Submit',
+            },
+          }
           : false
       }
       drawerProps={{
@@ -111,10 +111,13 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
           name="userName"
           label="User Name"
           placeholder="Please enter user name"
+          fieldProps={{
+            autoComplete: 'username',
+          }}
           rules={[
             { required: true, message: 'Please enter user name' },
             {
-              min: 6,
+              min: 3,
               message: 'User name must be at least 3 characters long',
             },
             {
@@ -122,8 +125,9 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
               message: 'User name cannot exceed 20 characters',
             },
             {
-              pattern: /^[a-zA-Z0-9_]+$/,
-              message: 'User name can only contain letters, numbers, and underscores',
+              pattern: /^[a-zA-Z0-9\-._@+]+$/,
+              message:
+                'User name can only contain letters, numbers, and the symbols - . _ @ +',
             },
           ]}
           disabled={!isEditing}
@@ -135,7 +139,11 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
             placeholder="Please enter password"
             rules={[
               { required: true, message: 'Please enter a password' },
-              { min: 8, message: 'Password must be at least 8 characters long' },
+              { min: 6, message: 'Password must be at least 6 characters long' },
+              {
+                pattern: /[a-z]/,
+                message: 'Password must contain at least one lowercase letter',
+              },
               {
                 pattern: /[A-Z]/,
                 message: 'Password must contain at least one uppercase letter',
@@ -145,7 +153,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
                 message: 'Password must contain at least one number',
               },
               {
-                pattern: /[!@#$%^&*(),.?":{}|<>]/,
+                pattern: /[^a-zA-Z0-9]/,
                 message: 'Password must contain at least one special character',
               },
             ]}
@@ -158,7 +166,7 @@ const UpdateFormDrawer: React.FC<UpdateFormDrawerProps> = ({
           label="Roles"
           mode="multiple"
           options={[
-            { label: 'User', value: ROLE.Basic },
+            { label: 'Basic', value: ROLE.Basic },
             { label: 'Admin', value: ROLE.Admin },
             // { label: 'Super Admin', value: ROLE.SuperAdmin },
           ]}

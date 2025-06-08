@@ -118,7 +118,7 @@ httpClient.interceptors.response.use(
           break;
 
         case 404:
-          message.error(data?.message || 'Resource not found.');
+          message.error(data?.Message || 'Resource not found.');
           break;
 
         case 500:
@@ -126,7 +126,7 @@ httpClient.interceptors.response.use(
           break;
 
         default:
-          message.error(data?.message || 'An error occurred. Please try again.');
+          message.error(data?.Message || 'An error occurred. Please try again.');
       }
     } else if (error.request) {
       message.error('No response from the server. Please check your connection.');
