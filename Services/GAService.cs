@@ -5,7 +5,7 @@ namespace ur_admin_web.Services
     public class GAService
     {
         private readonly string _propertyId;
-        private readonly string _serviceAccountPath;
+        private readonly string _credentials;
         private readonly BetaAnalyticsDataClient _analyticsDataClient;
 
         public GAService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
@@ -15,15 +15,16 @@ namespace ur_admin_web.Services
                 ?? throw new ArgumentNullException(
                     "PropertyId is not configured in appsettings.json"
                 );
-            _serviceAccountPath =
-                configuration["GASettings:ServiceAccountPath"]
+
+            _credentials =
+                configuration["GASettings:CredentialsJson"]
                 ?? throw new ArgumentNullException(
-                    "ServiceAccountKeyFilePath is not configured in appsettings.json"
+                    "CredentialsJson is not configured in appsettings.json"
                 );
 
             var builder = new BetaAnalyticsDataClientBuilder
             {
-                JsonCredentials = File.ReadAllText(_serviceAccountPath),
+                JsonCredentials = _credentials,
             };
 
             _analyticsDataClient = builder.Build();
