@@ -4,6 +4,7 @@ WORKDIR /app
 COPY ClientApp/package*.json ./ClientApp/
 RUN cd ClientApp && npm install
 COPY ClientApp ./ClientApp
+ENV REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
 RUN cd ClientApp && npm run build
 
 # Stage 2: Build the .NET backend
