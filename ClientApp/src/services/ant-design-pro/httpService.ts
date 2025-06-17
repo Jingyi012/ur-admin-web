@@ -2,7 +2,7 @@ import { message } from 'antd';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { refreshSession } from './auth';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7252/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
 // Track if we're already refreshing to prevent multiple concurrent refreshes
 let isRefreshing = false;
