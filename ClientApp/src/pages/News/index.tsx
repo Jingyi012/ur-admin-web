@@ -63,7 +63,7 @@ const NewsList: React.FC = () => {
       const response = await addNewsImages(newsId, fileList);
       if (!response.data.succeeded) {
         hide();
-        message.error('Image upload failed, please try again!');
+        message.error(response.data?.message || 'Image upload failed, please try again!');
         return false;
       }
       hide();
@@ -85,7 +85,7 @@ const NewsList: React.FC = () => {
       const response = await addNews(fields);
       if (!response.data.succeeded) {
         hide();
-        message.error('News creation failed, please try again!');
+        message.error(response.data?.message || 'News add failed, please try again!');
         return false;
       }
 
@@ -107,9 +107,9 @@ const NewsList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('An error occurred while adding the news. Please try again!');
+      message.error(error?.response?.data?.message || 'An error occurred while adding the news. Please try again!');
       return false;
     }
   };
@@ -173,17 +173,16 @@ const NewsList: React.FC = () => {
   const handleUpdate = async (fields: API.News, fileList: UploadFile[]) => {
     const hide = message.loading('Updating...');
     const newsId = currentRow!.id!;
-    console.log(fields);
     try {
       await removeImages(fileList);
       const uploadedUrls = await uploadNewImages(newsId, fileList);
       await reorderImages(newsId, fileList, uploadedUrls, currentRow?.imageUrls || []);
       await updateNewsDetails(newsId, fields);
 
-      message.success('Update successful');
+      message.success('Updated successfully!');
       return true;
     } catch (error: any) {
-      message.error(error.message || 'Update failed, please try again!');
+      message.error(error?.response?.data?.message || 'Update failed, please try again!');
       return false;
     } finally {
       hide();
@@ -200,7 +199,7 @@ const NewsList: React.FC = () => {
     try {
       await Promise.all(selectedRows.map((row) => removeNews(row.id!)));
       hide();
-      message.success('Deleted successfully');
+      message.success('Deleted successfully!');
       actionRef?.current?.reloadAndRest?.();
 
       if (isDrawer) {
@@ -208,9 +207,9 @@ const NewsList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('Delete failed, please try again');
+      message.error(error?.response?.data?.message || 'Delete failed, please try again!');
       return false;
     }
   };

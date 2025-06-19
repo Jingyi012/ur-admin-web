@@ -45,40 +45,40 @@ const UserList: React.FC = () => {
   };
 
   const handleAdd = async (fields: API.RegisterUserRequest) => {
-    const hide = message.loading('Adding');
+    const hide = message.loading('Adding...');
     try {
       const response = await addUser(fields);
       if (response.data.succeeded !== true) {
         hide();
-        message.error('Adding failed, please try again!');
+        message.error(response.data?.message || 'Add failed, please try again!');
       }
       hide();
       message.success('Added successfully');
       return true;
     } catch (error) {
       hide();
-      message.error('Adding failed, please try again!');
+      message.error('Add failed, please try again!');
       return false;
     }
   };
 
   const handleUpdate = async (fields: API.User) => {
-    const hide = message.loading('Updating');
+    const hide = message.loading('Updating...');
     try {
       const response = await updateUser(currentRow!.id!, fields);
 
       if (response.data.succeeded !== true) {
         hide();
-        message.error('Update failed, please try again!');
+        message.error(response.data?.message || 'Update failed, please try again!');
         return false;
       }
 
       hide();
-      message.success('Update is successful');
+      message.success('Updated successfully!');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('Update failed, please try again!');
+      message.error(error?.response?.data?.message || 'Update failed, please try again!');
       return false;
     }
   };
@@ -93,7 +93,7 @@ const UserList: React.FC = () => {
     try {
       await Promise.all(selectedRows.map((row) => removeUser(row.id!)));
       hide();
-      message.success('Deleted successfully');
+      message.success('Deleted successfully!');
       actionRef?.current?.reloadAndRest?.();
 
       if (isDrawer) {
@@ -101,9 +101,9 @@ const UserList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('Delete failed, please try again');
+      message.error(error?.response?.data?.message || 'Delete failed, please try again!');
       return false;
     }
   };

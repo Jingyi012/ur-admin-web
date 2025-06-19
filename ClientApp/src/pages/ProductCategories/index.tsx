@@ -85,9 +85,9 @@ const ProductCategoryList: React.FC = () => {
       }
       message.error(response.data?.message || 'Update failed, please try again!');
       return false;
-    } catch (err: any) {
+    } catch (error: any) {
       hide();
-      message.error(err?.response?.data?.message || 'Update failed, please try again!');
+      message.error(error?.response?.data?.message || 'Update failed, please try again!');
       return false;
     }
   };
@@ -108,9 +108,9 @@ const ProductCategoryList: React.FC = () => {
       actionRef.current?.reloadAndRest?.();
       setSelectedRows([]);
       return true;
-    } catch (err: any) {
+    } catch (error: any) {
       hide();
-      message.error(err?.response?.data?.message || 'Delete failed, please try again!');
+      message.error(error?.response?.data?.message || 'Delete failed, please try again!');
       return false;
     }
   };

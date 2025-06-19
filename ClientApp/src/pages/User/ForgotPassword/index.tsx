@@ -30,7 +30,6 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
     try {
       const response = await forgotPassword({ email: values.email });
-      console.log(response);
       if (response.status === 200) {
         message.success('Password reset link sent to your email.');
         history.push('/user/login'); // Redirect to login page after success
@@ -38,7 +37,7 @@ const ForgotPassword: React.FC = () => {
         message.error('Failed to send reset link.');
       }
     } catch (error) {
-      message.error('An error occurred while processing your request.');
+      //message.error('An error occurred while processing your request.');
     } finally {
       setLoading(false);
     }

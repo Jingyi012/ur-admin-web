@@ -68,7 +68,7 @@ const EnquiryList: React.FC = () => {
   };
 
   const handleUpdate = async (fields: Partial<API.Enquiry>) => {
-    const hide = message.loading('Updating');
+    const hide = message.loading('Updating...');
     try {
       const response = await updateEnquiry(currentRow!.id!, fields);
       if (response.data.succeeded !== true) {
@@ -78,11 +78,11 @@ const EnquiryList: React.FC = () => {
       }
 
       hide();
-      message.success('Update successful');
+      message.success('Updated successfully!');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('Update failed, please try again!');
+      message.error(error?.response?.data?.message || 'Update failed, please try again!');
       return false;
     }
   };
@@ -94,17 +94,17 @@ const EnquiryList: React.FC = () => {
       okText: 'Yes',
       cancelText: 'No',
       onOk: async () => {
-        const hide = message.loading('Deleting');
+        const hide = message.loading('Deleting...');
         if (!selectedRows) return true;
         try {
           await Promise.all(selectedRows.map((row) => removeEnquiry(row.id!)));
           hide();
-          message.success('Deleted successfully');
+          message.success('Deleted successfully!');
           actionRef.current?.reloadAndRest?.();
           return true;
-        } catch (error) {
+        } catch (error: any) {
           hide();
-          message.error('Delete failed, please try again');
+          message.error(error?.response?.data?.message || 'Delete failed, please try again!');
           return false;
         }
       },

@@ -104,7 +104,7 @@ const ProductsList: React.FC = () => {
       const response = await addProduct(fields);
       if (!response.data.succeeded) {
         hide();
-        message.error('Product creation failed, please try again!');
+        message.error(response.data?.message || 'Product add failed, please try again!');
         return false;
       }
 
@@ -126,9 +126,9 @@ const ProductsList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('An error occurred while adding the product. Please try again!');
+      message.error(error?.response?.data?.message || 'An error occurred while adding the product. Please try again!');
       return false;
     }
   };
@@ -199,10 +199,10 @@ const ProductsList: React.FC = () => {
       await reorderImages(productId, fileList, uploadedUrls, currentRow?.imageUrls || []);
       await updateProductDetails(productId, fields);
 
-      message.success('Update successful');
+      message.success('Updated successfully!');
       return true;
     } catch (error: any) {
-      message.error(error.message || 'Update failed, please try again!');
+      message.error(error?.response?.data?.message || 'Update failed, please try again!');
       return false;
     } finally {
       hide();
@@ -219,7 +219,7 @@ const ProductsList: React.FC = () => {
     try {
       await Promise.all(selectedRows.map((row) => removeProduct(row.id!)));
       hide();
-      message.success('Deleted successfully');
+      message.success('Deleted successfully!');
       actionRef?.current?.reloadAndRest?.();
 
       if (isDrawer) {
@@ -227,9 +227,9 @@ const ProductsList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('Delete failed, please try again');
+      message.error(error?.response?.data?.message || 'Delete failed, please try again!');
       return false;
     }
   };

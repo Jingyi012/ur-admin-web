@@ -96,7 +96,11 @@ const UpdateForm: React.FC<UpdateFormProps> = ({
           }}
           title={'Upload Image'}
           transform={() => ({})}
-          rules={[{ required: true, message: 'Please upload product category image' }]}
+          rules={
+            initialValues?.imageUrl
+              ? [] // No validation if there's an existing image
+              : [{ required: true, message: 'Please upload product category image' }]
+          }
         />
       </ModalForm>
 

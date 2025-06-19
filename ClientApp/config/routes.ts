@@ -41,7 +41,7 @@ export default [
   {
     name: 'Product Categories',
     icon: 'AppstoreOutlined',
-    path: '/product-category',
+    path: '/product-categories',
     access: 'canAdmin',
     component: './ProductCategories',
   },

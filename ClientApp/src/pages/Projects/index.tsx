@@ -68,7 +68,7 @@ const ProjectsList: React.FC = () => {
       const response = await addProjectImages(projectId, fileList);
       if (!response.data.succeeded) {
         hide();
-        message.error('Image upload failed, please try again!');
+        message.error(response.data?.message || 'Image upload failed, please try again!');
         return false;
       }
       hide();
@@ -76,8 +76,8 @@ const ProjectsList: React.FC = () => {
         actionRef.current.reload();
       }
       return true;
-    } catch (error) {
-      message.error('Image upload failed, please try again!');
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || 'Image upload failed, please try again!');
       return false;
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ const ProjectsList: React.FC = () => {
       const response = await addProject(fields);
       if (!response.data.succeeded) {
         hide();
-        message.error('Project creation failed, please try again!');
+        message.error(response.data?.message || 'Project add failed, please try again!');
         return false;
       }
 
@@ -112,9 +112,9 @@ const ProjectsList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('An error occurred while adding the project. Please try again!');
+      message.error(error?.response?.data?.message || 'An error occurred while adding the project. Please try again!');
       return false;
     }
   };
@@ -188,10 +188,10 @@ const ProjectsList: React.FC = () => {
       await reorderImages(projectId, fileList, uploadedUrls, currentRow?.imageUrls || []);
       await updateProjectDetails(projectId, fields);
 
-      message.success('Update successful');
+      message.success('Updated successfully!');
       return true;
     } catch (error: any) {
-      message.error(error.message || 'Update failed, please try again!');
+      message.error(error?.response?.data?.message || 'Update failed, please try again!');
       return false;
     } finally {
       hide();
@@ -208,7 +208,7 @@ const ProjectsList: React.FC = () => {
     try {
       await Promise.all(selectedRows.map((row) => removeProject(row.id!)));
       hide();
-      message.success('Deleted successfully');
+      message.success('Deleted successfully!');
       actionRef?.current?.reloadAndRest?.();
 
       if (isDrawer) {
@@ -216,9 +216,9 @@ const ProjectsList: React.FC = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       hide();
-      message.error('Delete failed, please try again');
+      message.error(error?.response?.data?.message || 'Delete failed, please try again!');
       return false;
     }
   };
