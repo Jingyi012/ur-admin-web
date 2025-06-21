@@ -151,8 +151,10 @@ const NewsList: React.FC = () => {
     const finalImageOrder = fileList
       .map((file) => file.url || uploadedUrls.shift())
       .filter(Boolean) as string[];
-
-    if (JSON.stringify(finalImageOrder) === JSON.stringify(initialImages)) {
+    if (
+      finalImageOrder.length === 0 ||
+      JSON.stringify(finalImageOrder) === JSON.stringify(initialImages)
+    ) {
       return;
     }
 

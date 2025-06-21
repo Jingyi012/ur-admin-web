@@ -9,16 +9,17 @@ import {
   updateProductCategory,
   removeProductCategory,
 } from '@/services/ant-design-pro/productCategory';
-import UpdateForm from './components/UpdateForm';
+import UpdateFormDrawer from './components/UpdateFormDrawer';
+import { UploadFile } from 'antd/lib';
 
 const ProductCategoryList: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<any>();
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const actionRef = useRef<ActionType>();
-  const [imageFile, setImageFile] = useState<any>();
 
   // Fetch product categories
   const fetchData = async (params: { pageNumber?: number; pageSize?: number; name?: string }) => {
@@ -42,7 +43,7 @@ const ProductCategoryList: React.FC = () => {
   };
 
   // Create
-  const handleAdd = async (fields: any) => {
+  const handleAdd = async (fields: any, imageFile: UploadFile | undefined) => {
     const hide = message.loading('Adding...');
     try {
       const response = await createProductCategory({
@@ -54,7 +55,6 @@ const ProductCategoryList: React.FC = () => {
         message.success('Added successfully!');
         setCreateModalOpen(false);
         actionRef.current?.reload();
-        setImageFile(undefined);
         return true;
       }
       message.error(response.data?.message || 'Add failed, please try again!');
@@ -67,7 +67,7 @@ const ProductCategoryList: React.FC = () => {
   };
 
   // Update
-  const handleUpdate = async (fields: any) => {
+  const handleUpdate = async (fields: any, imageFile: UploadFile | undefined) => {
     const hide = message.loading('Updating...');
     try {
       const response = await updateProductCategory(currentRow.id, {
@@ -80,7 +80,6 @@ const ProductCategoryList: React.FC = () => {
         setUpdateModalOpen(false);
         setCurrentRow(undefined);
         actionRef.current?.reload();
-        setImageFile(undefined);
         return true;
       }
       message.error(response.data?.message || 'Update failed, please try again!');
@@ -93,10 +92,12 @@ const ProductCategoryList: React.FC = () => {
   };
 
   // Delete
-  const handleRemove = async (rows: any[]) => {
+  const handleRemove = async (selectedRows: any[],
+    isDrawer: boolean = false) => {
     const hide = message.loading('Deleting...');
+    if (!selectedRows) return false;
     try {
-      const results = await Promise.all(rows.map((row) => removeProductCategory(row.id)));
+      const results = await Promise.all(selectedRows.map((row) => removeProductCategory(row.id)));
       hide();
       // Check each result for success
       const failed = results.find((res) => !res.data?.succeeded);
@@ -107,12 +108,27 @@ const ProductCategoryList: React.FC = () => {
       message.success('Deleted successfully!');
       actionRef.current?.reloadAndRest?.();
       setSelectedRows([]);
+
+      if (isDrawer) {
+        setUpdateModalOpen(false);
+      }
+
       return true;
     } catch (error: any) {
       hide();
       message.error(error?.response?.data?.message || 'Delete failed, please try again!');
       return false;
     }
+  };
+
+  const confirmDelete = (selectedRows: API.ProductCategory[], isDrawer: boolean = false) => {
+    Modal.confirm({
+      title: 'Confirm Deletion',
+      content: 'Are you sure you want to delete this category?',
+      okText: 'Yes',
+      cancelText: 'No',
+      onOk: async () => handleRemove(selectedRows, isDrawer),
+    });
   };
 
   // Columns
@@ -157,7 +173,7 @@ const ProductCategoryList: React.FC = () => {
           onClick={() => {
             setCurrentRow(record);
             setUpdateModalOpen(true);
-            setImageFile(undefined);
+            setIsEditMode(true);
           }}
         >
           Edit
@@ -195,7 +211,6 @@ const ProductCategoryList: React.FC = () => {
             key="primary"
             onClick={() => {
               setCreateModalOpen(true);
-              setImageFile(undefined);
             }}
           >
             <PlusOutlined /> New
@@ -214,25 +229,45 @@ const ProductCategoryList: React.FC = () => {
         }}
       />
 
-      {/* Create Modal */}
-      <UpdateForm
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        onFinish={async (values) => handleAdd(values)}
-        title="Create Product Category"
-        imageFile={imageFile}
-        setImageFile={setImageFile}
+      <UpdateFormDrawer
+        onSubmit={async (value, file) => {
+          const success = await handleAdd(value as API.ProductCategory, file);
+          if (success) {
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+            return true;
+          }
+          return false;
+        }}
+        onCancel={() => {
+          setCreateModalOpen(false);
+        }}
+        visible={createModalOpen}
+        initialValues={{}}
+        isEditMode={true}
+        isAddMode={true}
       />
 
-      {/* Update Modal */}
-      <UpdateForm
-        open={updateModalOpen}
-        onOpenChange={setUpdateModalOpen}
-        onFinish={async (values) => handleUpdate(values)}
-        initialValues={currentRow}
-        title="Update Product Category"
-        imageFile={imageFile}
-        setImageFile={setImageFile}
+      <UpdateFormDrawer
+        onCancel={() => {
+          setUpdateModalOpen(false);
+          setTimeout(() => setCurrentRow(undefined), 300);
+        }}
+        onSubmit={async (value, file) => {
+          const success = await handleUpdate(value, file);
+          if (success) {
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+            return true;
+          }
+          return false;
+        }}
+        visible={updateModalOpen}
+        initialValues={currentRow || {}}
+        isEditMode={isEditMode}
+        handleDelete={async () => confirmDelete([currentRow!], true)}
       />
 
       {selectedRows.length > 0 && (
