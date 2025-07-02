@@ -215,14 +215,9 @@ const EnquiryList: React.FC = () => {
     {
       title: 'Assigned To',
       dataIndex: 'assignedTo',
-      valueType: 'select',
-      fieldProps: {
-        options: userList.map((user) => ({
-          label: user.userName,
-          value: user.id,
-        })),
-        showSearch: true,
-        allowClear: true,
+      render: (_, record) => {
+        const matchedUser = userList.find(user => user.id === record.assignedTo);
+        return matchedUser?.userName || '-';
       },
     },
     {
