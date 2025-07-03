@@ -253,7 +253,7 @@ const ViewDetails: React.FC<ViewDetailsDrawerProps> = ({
         ) : (
           <Descriptions column={1}>
             <Descriptions.Item label="Assigned To">
-              {initialValues.assignedTo || '-'}
+              {userList.find(user => user.id === initialValues.assignedTo)?.userName || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Remarks">{initialValues.remarks || '-'}</Descriptions.Item>
           </Descriptions>
